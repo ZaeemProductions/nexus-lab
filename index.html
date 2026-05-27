@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aether Lab: Limitless</title>
+  <title>Aether Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; background: radial-gradient(circle at center, #0f172a, #000000); color: #fff; font-family: system-ui, -apple-system, sans-serif; }
-    #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-    .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; }
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: radial-gradient(circle at center, #0f172a, #000000); 
+      color: #fff; 
+      font-family: system-ui, -apple-system, sans-serif; 
+    }
+    #canvas-container { 
+      position: absolute; 
+      top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+    }
+    .glass { 
+      background: rgba(255, 255, 255, 0.05); 
+      backdrop-filter: blur(10px); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 1rem; 
+    }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
@@ -20,69 +34,37 @@
   <div id="canvas-container"></div>
 
   <header class="p-6 flex justify-between items-center z-10">
-    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">Aether Lab <span class="text-sm font-mono text-white/50 border border-white/20 px-2 py-1 rounded ml-2">v2.LIMITLESS</span></h1>
+    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">Aether Lab</h1>
+    <div id="auth-container">
+      <button id="login-btn" class="glass px-6 py-2 hover:bg-white/10 transition font-medium shadow-lg">Sign in</button>
+      <div id="user-info" class="hidden flex items-center gap-3 glass px-4 py-2 shadow-lg">
+        <img id="user-avatar" class="w-8 h-8 rounded-full border border-white/20" src="" alt="Avatar">
+        <span id="user-name" class="font-medium text-sm"></span>
+        <button id="logout-btn" class="text-xs text-red-400 ml-2 hover:text-red-300 transition">Exit</button>
+      </div>
+    </div>
   </header>
 
   <main class="flex-1 flex flex-col items-center p-4 z-10 w-full max-w-5xl mx-auto overflow-hidden">
     
     <div class="glass w-full p-4 mb-6 flex flex-wrap justify-center gap-3 shadow-lg">
       <button onclick="openTool('chat')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition">🤖 AI</button>
+      <button onclick="openTool('image')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition">🖼️ Dream</button>
+      <button onclick="openTool('glitch')" class="px-4 py-2 rounded-full border border-pink-500/50 text-pink-300 text-sm font-bold hover:bg-pink-500/20 transition">🔮 Glitch</button>
+      <button onclick="openTool('audio')" class="px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-300 text-sm font-bold hover:bg-cyan-500/20 transition">🎙️ Resonance</button>
+      <div class="w-px h-8 bg-white/20 mx-2 hidden md:block"></div>
       <button onclick="openTool('cipher')" class="px-4 py-2 rounded-full border border-yellow-500/50 text-yellow-300 text-sm font-bold hover:bg-yellow-500/20 transition">🔐 Cipher Core</button>
       <button onclick="openTool('sysscan')" class="px-4 py-2 rounded-full border border-green-500/50 text-green-300 text-sm font-bold hover:bg-green-500/20 transition">📟 Sys-Scan</button>
       <button onclick="openTool('vault')" class="px-4 py-2 rounded-full border border-indigo-500/50 text-indigo-300 text-sm font-bold hover:bg-indigo-500/20 transition">💾 Data Vault</button>
-      <div class="w-px h-8 bg-white/20 mx-2 hidden md:block"></div>
-      <button onclick="openTool('voice')" class="px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-300 text-sm font-bold hover:bg-cyan-500/20 transition">🗣️ Vocal Link</button>
-      <button onclick="openTool('stego')" class="px-4 py-2 rounded-full border border-pink-500/50 text-pink-300 text-sm font-bold hover:bg-pink-500/20 transition">🎭 Ghost Canvas</button>
-      <button onclick="openTool('chroma')" class="px-4 py-2 rounded-full border border-orange-500/50 text-orange-300 text-sm font-bold hover:bg-orange-500/20 transition">🎨 Chroma Node</button>
+      <button onclick="openTool('qrcode')" class="px-4 py-2 rounded-full border border-emerald-500/50 text-emerald-300 text-sm font-bold hover:bg-emerald-500/20 transition">🛠️ QR Forge</button>
     </div>
 
     <div class="glass w-full flex-1 flex flex-col relative shadow-2xl overflow-hidden p-6" id="tool-window">
       
       <div id="default-view" class="flex-1 flex flex-col items-center justify-center text-center">
         <div class="text-5xl mb-4 opacity-80 animate-pulse">🌌</div>
-        <h2 class="text-2xl font-bold text-white/90 mb-2">Limitless Paradigm Active</h2>
-        <p class="text-white/50 text-lg font-mono">Select an execution layer.</p>
-      </div>
-
-      <div id="tool-voice" class="hidden flex-1 flex flex-col h-full items-center justify-center">
-        <h2 class="text-xl font-bold mb-4 text-cyan-400 w-full border-b border-white/10 pb-2 absolute top-6 left-6">Vocal Link (Web Speech API)</h2>
-        <div class="text-center w-full max-w-lg">
-          <button id="voice-btn" onclick="toggleVoice()" class="bg-cyan-600 hover:bg-cyan-500 w-32 h-32 rounded-full font-bold text-4xl transition shadow-[0_0_30px_rgba(6,182,212,0.4)] mb-8 animate-pulse">🎙️</button>
-          <div id="voice-status" class="text-cyan-300/80 font-mono text-sm mb-4">Awaiting audio telemetry...</div>
-          <div id="voice-transcript" class="bg-black/40 border border-cyan-500/30 rounded-lg p-4 text-white min-h-[100px] shadow-inner break-words"></div>
-        </div>
-      </div>
-
-      <div id="tool-stego" class="hidden flex-1 flex flex-col h-full">
-        <h2 class="text-xl font-bold mb-4 text-pink-400 border-b border-white/10 pb-2">Ghost Canvas (LSB Steganography)</h2>
-        <div class="flex gap-4 h-full">
-          <div class="flex-1 flex flex-col gap-4">
-            <input type="file" id="stego-upload" accept="image/png, image/jpeg" class="block w-full text-sm text-pink-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-500/20 file:text-pink-300 hover:file:bg-pink-500/30 transition">
-            <textarea id="stego-secret" class="w-full flex-1 bg-black/40 border border-white/20 rounded-lg p-4 text-pink-100 focus:outline-none focus:border-pink-500 transition font-mono text-sm" placeholder="Type secret payload here..."></textarea>
-            <div class="flex gap-2">
-              <button onclick="encodeStego()" class="flex-1 bg-pink-600 hover:bg-pink-500 py-3 rounded-lg font-bold transition text-sm">Encode Payload</button>
-              <button onclick="decodeStego()" class="flex-1 bg-purple-600 hover:bg-purple-500 py-3 rounded-lg font-bold transition text-sm">Decode Canvas</button>
-            </div>
-          </div>
-          <div class="flex-1 bg-black/60 border border-white/10 rounded-lg flex items-center justify-center p-2 relative overflow-hidden">
-             <canvas id="stego-canvas" class="max-w-full max-h-full object-contain hidden"></canvas>
-             <span id="stego-placeholder" class="text-pink-500/40 font-mono text-sm">Visual noise renders here</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="tool-chroma" class="hidden flex-1 flex flex-col h-full">
-        <h2 class="text-xl font-bold mb-4 text-orange-400 border-b border-white/10 pb-2">Chroma Node (Quantization)</h2>
-        <input type="file" id="chroma-upload" accept="image/*" class="block w-full text-sm text-orange-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500/20 file:text-orange-300 hover:file:bg-orange-500/30 transition mb-6">
-        
-        <div class="flex flex-1 gap-6 items-center justify-center">
-           <div class="w-1/2 h-64 bg-black/40 border border-white/10 rounded-lg flex items-center justify-center relative overflow-hidden p-2">
-             <canvas id="chroma-canvas" class="max-w-full max-h-full object-contain"></canvas>
-           </div>
-           <div id="palette-output" class="w-1/2 grid grid-cols-2 gap-4">
-              <div class="text-orange-500/50 font-mono text-sm col-span-2 text-center">Awaiting geometric space cluster data...</div>
-           </div>
-        </div>
+        <h2 class="text-2xl font-bold text-white/90 mb-2">Systems Purged & Optimized</h2>
+        <p class="text-white/50 text-lg">Select a core function to begin.</p>
       </div>
 
       <div id="tool-chat" class="hidden flex-1 flex flex-col h-full">
@@ -93,6 +75,39 @@
         <div class="flex gap-2">
           <input type="text" id="chat-input" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-blue-400" placeholder="Type here...">
           <button onclick="sendChatMessage()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-bold">Send</button>
+        </div>
+      </div>
+
+      <div id="tool-image" class="hidden flex-1 flex flex-col h-full">
+        <h2 class="text-xl font-bold mb-4 text-purple-400 border-b border-white/10 pb-2">Dream Weaver</h2>
+        <div class="flex gap-2 mb-4">
+          <input type="text" id="image-input" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400" placeholder="Describe an image...">
+          <button onclick="generateImage()" class="bg-purple-600 hover:bg-purple-500 px-6 py-3 rounded-lg font-bold">Generate</button>
+        </div>
+        <div id="image-output" class="flex-1 glass flex items-center justify-center bg-black/40 overflow-hidden relative rounded-lg">
+          <p class="text-white/40 font-medium" id="image-placeholder">Generated reality will appear here</p>
+          <img id="result-image" src="" class="hidden h-full w-full object-contain p-2">
+        </div>
+      </div>
+
+      <div id="tool-glitch" class="hidden flex-1 flex flex-col h-full">
+        <h2 class="text-xl font-bold mb-4 text-pink-400 border-b border-white/10 pb-2">Glitch Caster</h2>
+        <div class="flex flex-col gap-4 h-full">
+          <textarea id="glitch-input" oninput="runGlitch()" class="w-full h-1/3 bg-black/40 border border-white/20 rounded-lg p-4 text-pink-100 focus:outline-none focus:border-pink-500 transition font-mono" placeholder="Type normal text here..."></textarea>
+          <div class="flex items-center gap-4 bg-black/30 p-4 rounded-lg border border-white/10">
+            <span class="text-pink-300 font-bold">Corruption: <span id="glitch-level-display">50</span>%</span>
+            <input type="range" id="glitch-level" min="10" max="150" value="50" oninput="runGlitch()" class="flex-1 accent-pink-500">
+          </div>
+          <div id="glitch-output" class="w-full flex-1 bg-black/60 border border-white/20 rounded-lg p-4 text-pink-400 font-mono text-xl overflow-y-auto break-words shadow-inner">T̷h̸e̵ ̵v̶o̵i̴d̵ ̶a̸w̵a̶i̸t̵s̴.̵.̷.̶</div>
+        </div>
+      </div>
+
+      <div id="tool-audio" class="hidden flex-1 flex flex-col h-full items-center">
+        <h2 class="text-xl font-bold mb-4 text-cyan-400 w-full border-b border-white/10 pb-2">Void Resonance</h2>
+        <button id="start-audio-btn" onclick="initAudio()" class="bg-cyan-600/80 hover:bg-cyan-500 px-8 py-4 rounded-full font-bold text-lg transition shadow-[0_0_15px_rgba(6,182,212,0.5)] mb-8">Activate Microphone</button>
+        <div class="w-full flex-1 relative glass bg-black/50 rounded-xl overflow-hidden flex items-center justify-center border border-cyan-500/30">
+          <canvas id="audio-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+          <span id="audio-status" class="text-cyan-500/50 font-mono z-10 pointer-events-none">Awaiting signal...</span>
         </div>
       </div>
 
@@ -122,14 +137,84 @@
           <h2 class="text-xl font-bold text-indigo-400">Data Vault</h2>
           <span class="text-xs text-indigo-400/50 font-mono" id="vault-status">Auto-saved locally</span>
         </div>
-        <textarea id="vault-input" oninput="saveVault()" class="w-full flex-1 bg-black/40 border border-indigo-500/30 rounded-lg p-6 text-indigo-100 focus:outline-none focus:border-indigo-400 transition font-mono leading-relaxed" spellcheck="false" placeholder="Encrypted local storage block."></textarea>
+        <textarea id="vault-input" oninput="saveVault()" class="w-full flex-1 bg-black/40 border border-indigo-500/30 rounded-lg p-6 text-indigo-100 focus:outline-none focus:border-indigo-400 transition font-mono leading-relaxed" spellcheck="false" placeholder="Drop code snippets, notes, or secrets here. They stay saved on this device even if you close the tab."></textarea>
+      </div>
+
+      <div id="tool-qrcode" class="hidden flex-1 flex flex-col h-full items-center">
+        <h2 class="text-xl font-bold mb-4 text-emerald-400 w-full border-b border-white/10 pb-2">QR Forge</h2>
+        <div class="w-full max-w-xl flex gap-2 mb-8 mt-4">
+          <input type="text" id="qr-input" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-400 transition" placeholder="Enter a URL, text, or payload...">
+          <button onclick="generateQR()" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-lg font-bold transition">Forge</button>
+        </div>
+        <div class="glass p-8 bg-white/5 rounded-2xl shadow-2xl flex items-center justify-center border border-white/10">
+          <img id="qr-output" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=AetherLab&color=ffffff&bgcolor=0f172a" alt="QR Code" class="w-56 h-56 rounded-lg mix-blend-screen">
+        </div>
       </div>
 
     </div>
   </main>
 
+  <footer class="glass m-4 p-3 z-10 h-24 overflow-hidden flex flex-col shadow-lg">
+    <h3 class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">Network Feed</h3>
+    <ul id="activity-feed" class="text-xs text-white/70 space-y-1 overflow-y-auto flex-1 font-mono pr-2">
+      <li>> UI optimized. Utilities loaded.</li>
+    </ul>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAk_rARkhkZGriWHMWkD6vRGhd82Ko32wM",
+      authDomain: "aether-lab.firebaseapp.com",
+      databaseURL: "https://aether-lab-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "aether-lab",
+      storageBucket: "aether-lab.firebasestorage.app",
+      messagingSenderId: "1044048980464",
+      appId: "1:1044048980464:web:f44f00902acf6c4ccc5535"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userInfo = document.getElementById('user-info');
+    const userName = document.getElementById('user-name');
+    const userAvatar = document.getElementById('user-avatar');
+    const activityFeed = document.getElementById('activity-feed');
+    const provider = new GoogleAuthProvider();
+    
+    loginBtn.onclick = () => signInWithPopup(auth, provider).catch(console.error);
+    logoutBtn.onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.classList.add('hidden'); userInfo.classList.remove('hidden');
+        userName.textContent = user.displayName; userAvatar.src = user.photoURL;
+        window.globalLogActivity(`${user.displayName} authenticated.`);
+      } else {
+        loginBtn.classList.remove('hidden'); userInfo.classList.add('hidden');
+      }
+    });
+
+    const feedRef = ref(db, 'activity');
+    window.globalLogActivity = function(message) { push(feedRef, { text: message, timestamp: serverTimestamp() }); };
+
+    onChildAdded(feedRef, (data) => {
+      const li = document.createElement('li');
+      li.textContent = `> ${data.val().text}`;
+      activityFeed.prepend(li);
+    });
+  </script>
+
   <script>
-    const allTools = ['chat', 'cipher', 'sysscan', 'vault', 'voice', 'stego', 'chroma'];
+    function tryLog(msg) { if(window.globalLogActivity) { window.globalLogActivity(msg); } }
+
+    const allTools = ['chat', 'image', 'glitch', 'audio', 'cipher', 'sysscan', 'vault', 'qrcode'];
     
     function openTool(toolName) {
       document.getElementById('default-view').classList.add('hidden');
@@ -137,171 +222,15 @@
         const el = document.getElementById('tool-' + t);
         if(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
       });
-      const active = document.getElementById('tool-' + toolName);
-      active.classList.remove('hidden'); active.classList.add('flex');
+      document.getElementById('tool-' + toolName).classList.remove('hidden');
+      document.getElementById('tool-' + toolName).classList.add('flex');
+
+      if(toolName === 'audio' && window.audioCanvasSetup) window.resizeAudioCanvas();
       if(toolName === 'sysscan') runSysScan();
       if(toolName === 'vault') loadVault();
     }
 
-    // --- 1. Vocal Link (Web Speech API) ---
-    let recognition;
-    let isListening = false;
-    
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRec();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      
-      recognition.onstart = () => {
-        document.getElementById('voice-btn').classList.replace('bg-cyan-600', 'bg-red-600');
-        document.getElementById('voice-status').innerText = "Recording acoustic telemetry...";
-      };
-      
-      recognition.onresult = async (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('voice-transcript').innerHTML = `<span class="text-white/50">You:</span> ${transcript}<br><br><span class="text-cyan-400 animate-pulse">Processing...</span>`;
-        
-        try {
-          const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent("Give a short 1 sentence response to: " + transcript)}`);
-          const reply = await res.text();
-          document.getElementById('voice-transcript').innerHTML = `<span class="text-white/50">You:</span> ${transcript}<br><br><span class="text-cyan-400">Agent:</span> ${reply}`;
-          
-          const utterance = new SpeechSynthesisUtterance(reply);
-          utterance.pitch = 0.8;
-          utterance.rate = 1.1;
-          window.speechSynthesis.speak(utterance);
-        } catch(e) {
-          document.getElementById('voice-transcript').innerHTML += `<br><span class="text-red-400">Network error.</span>`;
-        }
-      };
-      
-      recognition.onend = () => {
-        isListening = false;
-        document.getElementById('voice-btn').classList.replace('bg-red-600', 'bg-cyan-600');
-        document.getElementById('voice-status').innerText = "Standby.";
-      };
-    }
-
-    function toggleVoice() {
-      if(!recognition) return alert("Web Speech API not supported in this browser.");
-      if(isListening) { recognition.stop(); } 
-      else { recognition.start(); isListening = true; }
-    }
-
-
-    // --- 2. Ghost Canvas (LSB Steganography) ---
-    let stegoImg = new Image();
-    document.getElementById('stego-upload').addEventListener('change', function(e) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        stegoImg.onload = function() {
-          const c = document.getElementById('stego-canvas');
-          c.width = stegoImg.width; c.height = stegoImg.height;
-          c.getContext('2d').drawImage(stegoImg, 0, 0);
-          c.classList.remove('hidden'); document.getElementById('stego-placeholder').classList.add('hidden');
-        }
-        stegoImg.src = event.target.result;
-      }
-      reader.readAsDataURL(e.target.files[0]);
-    });
-
-    function encodeStego() {
-      const msg = document.getElementById('stego-secret').value + '\0'; // Null terminator
-      const c = document.getElementById('stego-canvas');
-      const ctx = c.getContext('2d');
-      const imgData = ctx.getImageData(0, 0, c.width, c.height);
-      const data = imgData.data;
-      
-      let msgBits = [];
-      for(let i=0; i<msg.length; i++) {
-        let bin = msg.charCodeAt(i).toString(2).padStart(8, '0');
-        for(let j=0; j<bin.length; j++) msgBits.push(parseInt(bin[j]));
-      }
-      
-      if(msgBits.length > data.length / 4) return alert("Payload too large for this image.");
-      
-      for(let i=0; i<msgBits.length; i++) {
-        // Embed in the lowest bit of the Red channel (every 4th index: 0, 4, 8...)
-        data[i*4] = (data[i*4] & ~1) | msgBits[i];
-      }
-      
-      ctx.putImageData(imgData, 0, 0);
-      alert("Payload embedded via LSB insertion. Canvas updated.");
-    }
-
-    function decodeStego() {
-      const c = document.getElementById('stego-canvas');
-      const ctx = c.getContext('2d');
-      const imgData = ctx.getImageData(0, 0, c.width, c.height);
-      const data = imgData.data;
-      
-      let bits = [];
-      let decoded = "";
-      
-      for(let i=0; i<data.length; i+=4) {
-        bits.push(data[i] & 1);
-        if(bits.length === 8) {
-          let charCode = parseInt(bits.join(''), 2);
-          if(charCode === 0) break; // Reached null terminator
-          decoded += String.fromCharCode(charCode);
-          bits = [];
-        }
-      }
-      document.getElementById('stego-secret').value = decoded || "No payload detected.";
-    }
-
-
-    // --- 3. Chroma Node (Algorithmic Quantization via simplified Median Cut) ---
-    document.getElementById('chroma-upload').addEventListener('change', function(e) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          const c = document.getElementById('chroma-canvas');
-          // Scale down for mathematical performance
-          c.width = 100; c.height = 100 * (img.height/img.width);
-          const ctx = c.getContext('2d');
-          ctx.drawImage(img, 0, 0, c.width, c.height);
-          extractPalette(ctx, c.width, c.height);
-        }
-        img.src = event.target.result;
-      }
-      reader.readAsDataURL(e.target.files[0]);
-    });
-
-    function extractPalette(ctx, w, h) {
-      const data = ctx.getImageData(0, 0, w, h).data;
-      let r=0, g=0, b=0, count=0;
-      let buckets = { dark: [], mid: [], light: [], accent: [] };
-      
-      // Simple luminosity geometric bucketing
-      for(let i=0; i<data.length; i+=16) { 
-        let lum = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
-        let px = {r: data[i], g: data[i+1], b: data[i+2]};
-        if(lum < 60) buckets.dark.push(px);
-        else if(lum > 200) buckets.light.push(px);
-        else if(Math.abs(data[i]-data[i+1]) > 50) buckets.accent.push(px);
-        else buckets.mid.push(px);
-      }
-
-      function getAvg(arr) {
-        if(!arr.length) return 'rgb(128,128,128)';
-        let tr=0, tg=0, tb=0;
-        arr.forEach(p => { tr+=p.r; tg+=p.g; tb+=p.b; });
-        return `rgb(${~~(tr/arr.length)}, ${~~(tg/arr.length)}, ${~~(tb/arr.length)})`;
-      }
-
-      const out = document.getElementById('palette-output');
-      out.innerHTML = `
-        <div class="h-24 rounded-lg shadow-lg flex items-end p-2 font-mono text-xs text-white mix-blend-difference" style="background: ${getAvg(buckets.dark)}">Shadow Vector</div>
-        <div class="h-24 rounded-lg shadow-lg flex items-end p-2 font-mono text-xs text-white mix-blend-difference" style="background: ${getAvg(buckets.mid)}">Midtone Data</div>
-        <div class="h-24 rounded-lg shadow-lg flex items-end p-2 font-mono text-xs text-black mix-blend-difference" style="background: ${getAvg(buckets.light)}">Luma Node</div>
-        <div class="h-24 rounded-lg shadow-lg flex items-end p-2 font-mono text-xs text-white mix-blend-difference" style="background: ${getAvg(buckets.accent)}">Accent Anomaly</div>
-      `;
-    }
-
-    // --- Legacy Functions Restored ---
+    // --- AI Chat ---
     async function sendChatMessage() {
       const input = document.getElementById('chat-input'), output = document.getElementById('chat-output');
       if (!input.value.trim()) return;
@@ -317,45 +246,144 @@
       } catch (err) { document.getElementById(id).remove(); output.innerHTML += `<div class="text-left text-red-400">Error: Signal lost.</div>`; }
       output.scrollTop = output.scrollHeight;
     }
-    
+    document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+
+    // --- Dream Weaver ---
+    function generateImage() {
+      const input = document.getElementById('image-input').value.trim();
+      if (!input) return;
+      const placeholder = document.getElementById('image-placeholder'), img = document.getElementById('result-image');
+      placeholder.textContent = "Synthesizing..."; placeholder.classList.remove('hidden'); img.classList.add('hidden');
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?seed=${Math.floor(Math.random()*10000)}&width=800&height=500&nologo=true`;
+      const temp = new Image(); temp.onload = () => { img.src = url; placeholder.classList.add('hidden'); img.classList.remove('hidden'); };
+      temp.src = url;
+    }
+
+    // --- Glitch Caster ---
+    function runGlitch() {
+      const text = document.getElementById('glitch-input').value, level = document.getElementById('glitch-level').value;
+      document.getElementById('glitch-level-display').innerText = level;
+      const chars = '\u0300\u0301\u0302\u0303\u0304\u0305\u0306\u0307\u0308\u0309\u030A\u030B\u030C\u030D\u030E\u030F\u0310\u0311\u0312\u0313\u0314\u0315\u0316\u0317\u0318\u0319\u031A\u031B\u031C\u031D\u031E\u031F\u0320\u0321\u0322\u0323\u0324\u0325\u0326\u0327\u0328\u0329\u032A\u032B\u032C\u032D\u032E\u032F';
+      let res = '';
+      for (let i = 0; i < text.length; i++) {
+        res += text[i];
+        for (let j = 0; j < Math.floor(Math.random()*(level/10)); j++) res += chars[Math.floor(Math.random()*chars.length)];
+      }
+      document.getElementById('glitch-output').innerText = res || 'T̷h̸e̵ ̵v̶o̵i̴d̵ ̶a̸w̵a̶i̸t̵s̴.̵.̷.̶';
+    }
+
+    // --- Void Resonance ---
+    let actx, analyser, dataArr;
+    async function initAudio() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        document.getElementById('start-audio-btn').classList.add('hidden'); document.getElementById('audio-status').classList.add('hidden');
+        actx = new (window.AudioContext || window.webkitAudioContext)(); analyser = actx.createAnalyser();
+        actx.createMediaStreamSource(stream).connect(analyser); analyser.fftSize = 256; dataArr = new Uint8Array(analyser.frequencyBinCount);
+        setupAudioCanvas(); drawAudio();
+      } catch(e){}
+    }
+    function setupAudioCanvas() {
+      const c = document.getElementById('audio-canvas'); window.audioCanvasSetup = true;
+      window.resizeAudioCanvas = () => { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; };
+      window.resizeAudioCanvas(); window.addEventListener('resize', window.resizeAudioCanvas);
+    }
+    function drawAudio() {
+      if(!actx) return;
+      const c = document.getElementById('audio-canvas'), ctx = c.getContext('2d'); requestAnimationFrame(drawAudio); analyser.getByteFrequencyData(dataArr);
+      ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0,0,c.width,c.height);
+      let x = 0, w = (c.width/dataArr.length)*2.5;
+      for(let i = 0; i < dataArr.length; i++) {
+        let h = dataArr[i]*1.5; ctx.fillStyle = 'cyan'; ctx.shadowBlur = 10; ctx.shadowColor = 'cyan';
+        ctx.fillRect(x, c.height - h/2, w, h/2); x += w + 1;
+      }
+    }
+
+    // --- NEW: Cipher Core ---
     async function runCipher(action) {
       const input = document.getElementById('cipher-input').value;
       const output = document.getElementById('cipher-output');
       if (!input) return;
+      
       try {
-        if (action === 'encode') output.value = btoa(unescape(encodeURIComponent(input)));
-        else if (action === 'decode') output.value = decodeURIComponent(escape(atob(input)));
-        else if (action === 'hash') {
+        if (action === 'encode') {
+          output.value = btoa(unescape(encodeURIComponent(input)));
+          tryLog(`Executed Base64 Encryption.`);
+        } else if (action === 'decode') {
+          output.value = decodeURIComponent(escape(atob(input)));
+          tryLog(`Executed Base64 Decryption.`);
+        } else if (action === 'hash') {
+          // SHA-256 Web Crypto API
           const msgBuffer = new TextEncoder().encode(input);
           const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
           const hashArray = Array.from(new Uint8Array(hashBuffer));
           output.value = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          tryLog(`Forged SHA-256 Hash.`);
         }
-      } catch (e) { output.value = "Format Error."; }
+      } catch (e) {
+        output.value = "Error: Invalid input format for this operation.";
+      }
     }
 
+    // --- NEW: Sys-Scan Telemetry ---
     function runSysScan() {
       const out = document.getElementById('sys-scan-output');
-      let html = `<div class="mb-4 text-green-300 font-bold">SYSTEM DIAGNOSTICS...</div>`;
-      const data = { "User Agent": navigator.userAgent, "Platform": navigator.platform || "Unknown", "Logical Cores": navigator.hardwareConcurrency || "Unknown", "Device Memory": navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Restricted" };
-      for (const [key, value] of Object.entries(data)) html += `<div class="mb-2"><span class="text-green-500/50">[${key.toUpperCase()}]</span><br>> ${value}</div>`;
-      out.innerHTML = html + `<div class="mt-4 text-green-300 font-bold animate-pulse">SCAN COMPLETE.</div>`;
+      let html = `<div class="mb-4 text-green-300 font-bold">SYSTEM DIAGNOSTICS INITIATED...</div>`;
+      
+      const data = {
+        "User Agent": navigator.userAgent,
+        "Platform": navigator.platform || "Unknown",
+        "Logical Cores": navigator.hardwareConcurrency || "Unknown",
+        "Device Memory": navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Restricted",
+        "Language": navigator.language,
+        "Cookies Enabled": navigator.cookieEnabled,
+        "Screen Resolution": `${window.screen.width} x ${window.screen.height}`,
+        "Color Depth": `${window.screen.colorDepth}-bit`,
+        "Network Status": navigator.onLine ? "ONLINE" : "OFFLINE",
+        "Network Type": navigator.connection ? navigator.connection.effectiveType : "Unknown",
+        "Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone
+      };
+
+      for (const [key, value] of Object.entries(data)) {
+        html += `<div class="mb-2"><span class="text-green-500/50">[${key.toUpperCase()}]</span><br>> ${value}</div>`;
+      }
+      
+      html += `<div class="mt-4 text-green-300 font-bold animate-pulse">SCAN COMPLETE.</div>`;
+      out.innerHTML = html;
+      tryLog(`Ran Sys-Scan Telemetry.`);
     }
 
+    // --- NEW: Data Vault ---
     function loadVault() {
+      const input = document.getElementById('vault-input');
       const saved = localStorage.getItem('aether_vault_data');
-      if(saved) document.getElementById('vault-input').value = saved;
+      if(saved) input.value = saved;
     }
     function saveVault() {
-      localStorage.setItem('aether_vault_data', document.getElementById('vault-input').value);
+      const input = document.getElementById('vault-input').value;
+      localStorage.setItem('aether_vault_data', input);
       const status = document.getElementById('vault-status');
-      status.innerText = "Saved just now"; status.classList.add('text-indigo-300');
-      setTimeout(() => { status.innerText = "Auto-saved locally"; status.classList.remove('text-indigo-300'); }, 2000);
+      status.innerText = "Saved just now";
+      status.classList.add('text-indigo-300');
+      setTimeout(() => {
+        status.innerText = "Auto-saved locally";
+        status.classList.remove('text-indigo-300');
+      }, 2000);
     }
+
+    // --- NEW: QR Forge ---
+    function generateQR() {
+      const input = document.getElementById('qr-input').value.trim();
+      const qrOutput = document.getElementById('qr-output');
+      if (!input) return;
+      tryLog(`Forged new QR Code.`);
+      qrOutput.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(input)}&color=ffffff&bgcolor=0f172a`;
+    }
+    document.getElementById('qr-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') generateQR(); });
+
   </script>
 
   <script>
-    // Retaining the WebGL Background Context
     const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('canvas-container').appendChild(renderer.domElement);
