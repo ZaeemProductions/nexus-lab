@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aether Lab</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     body { 
       margin: 0; 
@@ -46,7 +47,7 @@
     </div>
   </header>
 
-  <main class="flex-1 flex flex-col items-center p-6 z-10 w-full max-w-5xl mx-auto overflow-hidden">
+  <main class="flex-1 flex flex-col items-center p-6 z-10 w-full max-w-6xl mx-auto overflow-hidden">
     
     <div class="glass w-full p-4 mb-4 flex flex-wrap justify-center gap-3 shadow-lg">
       <button onclick="openTool('chat')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">🤖 AI Chat</button>
@@ -54,7 +55,8 @@
       <button onclick="openTool('qrcode')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">🛠️ QR Code</button>
       <button onclick="openTool('cipher')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">🔐 Cipher Kit</button>
       <button onclick="openTool('password')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">🔑 Pass Gen</button>
-      <button onclick="openTool('forge')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">💻 HTML Forge</button>
+      <button onclick="openTool('markdown')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">📝 Markdown</button>
+      <button onclick="openTool('json')" class="px-4 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white/10 transition shadow">⚙️ JSON Wizard</button>
     </div>
 
     <div class="glass w-full flex-1 flex flex-col relative shadow-2xl overflow-hidden p-6" id="tool-window">
@@ -133,18 +135,28 @@
         </div>
       </div>
 
-      <div id="tool-forge" class="hidden flex-1 flex flex-col h-full">
-        <h2 class="text-xl font-bold mb-4 text-orange-400 border-b border-white/10 pb-2">HTML Forge</h2>
+      <div id="tool-markdown" class="hidden flex-1 flex flex-col h-full">
+        <h2 class="text-xl font-bold mb-4 text-orange-400 border-b border-white/10 pb-2">Markdown Previewer</h2>
         <div class="flex-1 flex flex-col md:flex-row gap-4 h-full">
           <div class="flex-1 flex flex-col">
-            <div class="text-xs text-white/50 mb-1 uppercase tracking-wider">Code (HTML/CSS/JS)</div>
-            <textarea id="forge-input" oninput="updateForge()" class="w-full flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-orange-200 focus:outline-none focus:border-orange-400 transition font-mono text-sm leading-relaxed" spellcheck="false" placeholder="<h1>Hello World</h1>&#10;<style>h1 { color: #f97316; }</style>"></textarea>
+            <div class="text-xs text-white/50 mb-1 uppercase tracking-wider">Markdown Input</div>
+            <textarea id="md-input" oninput="updateMarkdown()" class="w-full flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-orange-200 focus:outline-none focus:border-orange-400 transition font-mono text-sm leading-relaxed" spellcheck="false" placeholder="# Hello Aether...&#10;&#10;Type some **bold** or *italic* text here."></textarea>
           </div>
           <div class="flex-1 flex flex-col">
             <div class="text-xs text-white/50 mb-1 uppercase tracking-wider">Live Preview</div>
-            <iframe id="forge-output" class="w-full flex-1 bg-white rounded-lg border border-white/20 shadow-inner"></iframe>
+            <div id="md-output" class="w-full flex-1 bg-white/90 text-black rounded-lg border border-white/20 shadow-inner p-4 overflow-y-auto prose prose-sm max-w-none"></div>
           </div>
         </div>
+      </div>
+
+      <div id="tool-json" class="hidden flex-1 flex flex-col h-full">
+        <h2 class="text-xl font-bold mb-4 text-cyan-400 border-b border-white/10 pb-2">JSON Wizard</h2>
+        <div class="flex gap-4 justify-center mb-4">
+          <button onclick="processJSON('format')" class="bg-cyan-600/80 hover:bg-cyan-500 px-6 py-2 rounded-lg font-bold transition shadow-lg">Format / Beautify</button>
+          <button onclick="processJSON('minify')" class="bg-cyan-800/80 hover:bg-cyan-700 px-6 py-2 rounded-lg font-bold transition shadow-lg">Minify</button>
+        </div>
+        <textarea id="json-input" class="w-full flex-1 bg-black/40 border border-white/20 rounded-lg p-4 text-cyan-200 focus:outline-none focus:border-cyan-400 transition font-mono text-sm leading-relaxed" spellcheck="false" placeholder='{"paste": "your messy JSON here", "and": "make it beautiful"}'></textarea>
+        <div id="json-error" class="hidden mt-4 text-red-400 text-sm bg-red-900/20 px-4 py-3 rounded-lg border border-red-500/30"></div>
       </div>
 
     </div>
@@ -221,7 +233,7 @@
     }
 
     // --- Navigation ---
-    const allTools = ['chat', 'image', 'qrcode', 'cipher', 'password', 'forge'];
+    const allTools = ['chat', 'image', 'qrcode', 'cipher', 'password', 'markdown', 'json'];
     function openTool(toolName) {
       document.getElementById('default-view').classList.add('hidden');
       allTools.forEach(t => {
@@ -351,11 +363,38 @@
       }
     }
 
-    // --- HTML Forge ---
-    function updateForge() {
-      const input = document.getElementById('forge-input').value;
-      const iframe = document.getElementById('forge-output');
-      iframe.srcdoc = input;
+    // --- Markdown Previewer ---
+    function updateMarkdown() {
+      const input = document.getElementById('md-input').value;
+      const output = document.getElementById('md-output');
+      // Using DOMPurify in a real production app is advised, but marked is okay for personal util
+      output.innerHTML = marked.parse(input);
+    }
+    
+    // Set initial markdown load
+    updateMarkdown();
+
+    // --- JSON Wizard ---
+    function processJSON(action) {
+      const inputEl = document.getElementById('json-input');
+      const errorEl = document.getElementById('json-error');
+      const raw = inputEl.value.trim();
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (action === 'format') {
+          inputEl.value = JSON.stringify(parsed, null, 2);
+          tryLog('User formatted JSON.');
+        } else if (action === 'minify') {
+          inputEl.value = JSON.stringify(parsed);
+          tryLog('User minified JSON.');
+        }
+        errorEl.classList.add('hidden'); // Hide error box if successful
+      } catch (err) {
+        errorEl.textContent = "Syntax Error: " + err.message;
+        errorEl.classList.remove('hidden');
+      }
     }
   </script>
 
