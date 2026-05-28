@@ -2,299 +2,82 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aether OS // Full Stack Paradigm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether OS // Nexus Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        :root {
-            --aether-bg: #030305;
-            --aether-surface: rgba(15, 15, 20, 0.7);
-            --aether-glass: rgba(255, 255, 255, 0.03);
-            --aether-glass-hover: rgba(255, 255, 255, 0.08);
-            --aether-border: rgba(255, 255, 255, 0.08);
-            --aether-border-highlight: rgba(6, 182, 212, 0.4);
-            --accent-cyan: #06b6d4; --accent-purple: #a855f7; --accent-rose: #f43f5e;
-            --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-            --font-sans: system-ui, -apple-system, sans-serif;
-            --taskbar-height: 52px;
-            --window-border-radius: 12px;
-            --glass-blur: blur(25px);
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: var(--aether-bg); color: #e2e8f0; font-family: var(--font-sans); overflow: hidden; width: 100vw; height: 100vh; user-select: none; -webkit-font-smoothing: antialiased; }
-        @keyframes bootSequence { 0% { opacity: 0; filter: brightness(0) contrast(1.5); } 100% { opacity: 1; filter: brightness(1) contrast(1); } }
-        @keyframes windowOpen { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-        #os-matrix-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-        .os-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.25) 51%); background-size: 100% 4px; z-index: 9999; pointer-events: none; opacity: 0.15; }
-        .os-booting { animation: bootSequence 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        .os-window { position: absolute; background: var(--aether-surface); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--aether-border); border-radius: var(--window-border-radius); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); display: flex; flex-direction: column; overflow: hidden; animation: windowOpen 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; min-width: 380px; min-height: 280px; z-index: 10; }
-        .os-window.active { border-color: var(--aether-border-highlight); box-shadow: 0 0 30px rgba(6, 182, 212, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.9); z-index: 100; }
-        .os-window-header { height: 42px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid var(--aether-border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; cursor: grab; flex-shrink: 0; }
-        .os-window-header:active { cursor: grabbing; }
-        .os-window-controls { display: flex; gap: 8px; }
-        .control-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; transition: opacity 0.2s; }
-        .control-dot:hover { opacity: 0.8; }
-        .dot-close { background-color: #ef4444; } .dot-min { background-color: #eab308; } .dot-max { background-color: #22c55e; }
-        .os-window-title { font-family: var(--font-mono); font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.05em; text-transform: uppercase; pointer-events: none; }
-        .os-window-content { flex: 1; padding: 16px; overflow-y: auto; position: relative; }
-        
-        .os-taskbar { position: absolute; bottom: 0; left: 0; right: 0; height: var(--taskbar-height); background: rgba(5, 5, 10, 0.85); backdrop-filter: blur(25px); border-top: 1px solid var(--aether-border); display: flex; align-items: center; padding: 0 16px; z-index: 1000; }
-        .taskbar-start { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); transition: all 0.2s; }
-        .taskbar-start:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(168, 85, 247, 0.6); }
-        .taskbar-items { display: flex; gap: 8px; margin-left: 24px; flex: 1; overflow-x: auto; }
-        .taskbar-item { padding: 8px 14px; border-radius: 6px; background: var(--aether-glass); border: 1px solid transparent; font-size: 0.8rem; font-family: var(--font-mono); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-        .taskbar-item:hover { background: var(--aether-glass-hover); border-color: var(--aether-border); }
-        .taskbar-item.active { background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: var(--accent-cyan); }
-        .taskbar-tray { display: flex; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        :root { --aether-bg: #030305; --aether-surface: rgba(15, 15, 20, 0.7); --accent-cyan: #06b6d4; }
+        body { background-color: var(--aether-bg); color: #e2e8f0; font-family: system-ui, sans-serif; overflow: hidden; height: 100vh; }
+        .os-window { position: absolute; background: var(--aether-surface); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; z-index: 10; }
+        .taskbar { position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: rgba(5, 5, 10, 0.85); backdrop-filter: blur(25px); border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 0 16px; z-index: 1000; }
     </style>
 </head>
-<body class="os-booting">
-    <div id="os-matrix-bg"></div>
-    <div class="os-scanline"></div>
-    <div id="os-desktop" class="absolute inset-0 bottom-[52px] overflow-hidden"></div>
+<body>
+    <div id="os-matrix-bg" class="absolute inset-0"></div>
+    <div id="os-desktop" class="absolute inset-0 bottom-[52px]"></div>
     
-    <div class="os-taskbar">
-        <div class="taskbar-start" id="start-menu-btn"><span class="text-white font-bold text-sm">A</span></div>
-        <div class="taskbar-items" id="taskbar-item-container"></div>
-        <div class="taskbar-tray">
-            <span id="tray-network" class="text-green-400">NET: OK</span>
-            <span id="tray-clock">00:00:00</span>
-        </div>
+    <div class="taskbar">
+        <div id="start-menu-btn" class="w-10 h-10 rounded-lg bg-cyan-600 flex items-center justify-center cursor-pointer font-bold">A</div>
+        <div id="taskbar-item-container" class="flex gap-2 ml-4 flex-1"></div>
+        <div class="font-mono text-xs text-white/60" id="tray-clock">00:00:00</div>
     </div>
 
     <script>
         const AetherOS = {
-            version: '6.0.FULLSTACK',
             windows: new Map(),
-            zIndexCounter: 100,
-            
-            boot() {
-                this.initClock();
-                this.initTelemetry();
-                this.initWebGLMatrix();
-                this.createWindow('media', 'Media Ripper (Backend Attached)', this.templates.mediaRipper(), 550, 450);
-            },
-
-            createWindow(id, title, htmlContent, width=400, height=300) {
-                if (this.windows.has(id)) return this.focusWindow(id);
-                const winEl = document.createElement('div');
-                winEl.className = 'os-window'; winEl.id = `window-${id}`;
-                winEl.style.width = `${width}px`; winEl.style.height = `${height}px`;
-                winEl.style.left = `${Math.max(10, (window.innerWidth-width)/2 + (Math.random()*40-20))}px`;
-                winEl.style.top = `${Math.max(10, (window.innerHeight-height-52)/2 + (Math.random()*40-20))}px`;
-                
-                winEl.innerHTML = `
-                    <div class="os-window-header" id="header-${id}">
-                        <div class="os-window-controls">
-                            <div class="control-dot dot-close" onclick="AetherOS.closeWindow('${id}')"></div>
-                            <div class="control-dot dot-min"></div>
-                            <div class="control-dot dot-max"></div>
-                        </div>
-                        <div class="os-window-title">${title}</div>
-                        <div class="w-4"></div>
+            createWindow(id, title, htmlContent, w, h) {
+                if (this.windows.has(id)) return;
+                const win = document.createElement('div');
+                win.className = 'os-window';
+                win.style.width = `${w}px`; win.style.height = `${h}px`;
+                win.innerHTML = `
+                    <div class="h-10 bg-black/40 border-b border-white/10 flex items-center px-4 cursor-grab">
+                        <div class="w-3 h-3 rounded-full bg-red-500 mr-2" onclick="AetherOS.closeWindow('${id}')"></div>
+                        <span class="text-[10px] text-white/50 uppercase font-mono">${title}</span>
                     </div>
-                    <div class="os-window-content">${htmlContent}</div>
+                    <div class="flex-1 overflow-auto p-4">${htmlContent}</div>
                 `;
-                
-                document.getElementById('os-desktop').appendChild(winEl);
-                this.windows.set(id, { el: winEl, title });
-                this.makeDraggable(winEl, document.getElementById(`header-${id}`));
+                document.getElementById('os-desktop').appendChild(win);
+                this.windows.set(id, win);
                 this.addToTaskbar(id, title);
-                winEl.addEventListener('mousedown', () => this.focusWindow(id));
-                this.focusWindow(id);
             },
-
-            closeWindow(id) {
-                if(!this.windows.has(id)) return;
-                this.windows.get(id).el.remove();
-                this.windows.delete(id);
+            closeWindow(id) { 
+                this.windows.get(id).remove(); 
+                this.windows.delete(id); 
                 document.getElementById(`taskbar-${id}`).remove();
             },
-
-            focusWindow(id) {
-                if(!this.windows.has(id)) return;
-                this.windows.get(id).el.style.zIndex = ++this.zIndexCounter;
-                document.querySelectorAll('.os-window, .taskbar-item').forEach(e => e.classList.remove('active'));
-                this.windows.get(id).el.classList.add('active');
-                document.getElementById(`taskbar-${id}`).classList.add('active');
-            },
-
             addToTaskbar(id, title) {
                 const item = document.createElement('div');
-                item.className = 'taskbar-item'; item.id = `taskbar-${id}`;
-                item.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400"></span> ${title}`;
-                item.onclick = () => this.focusWindow(id);
+                item.id = `taskbar-${id}`;
+                item.className = 'px-4 py-2 bg-white/5 rounded text-xs font-mono cursor-pointer hover:bg-white/10';
+                item.innerText = title;
                 document.getElementById('taskbar-item-container').appendChild(item);
             },
-
-            makeDraggable(el, handle) {
-                let p1=0, p2=0, p3=0, p4=0;
-                handle.onmousedown = e => { e.preventDefault(); p3=e.clientX; p4=e.clientY; document.onmouseup=close; document.onmousemove=drag; };
-                function drag(e) { e.preventDefault(); p1=p3-e.clientX; p2=p4-e.clientY; p3=e.clientX; p4=e.clientY; el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px"; }
-                function close() { document.onmouseup=null; document.onmousemove=null; }
-            },
-
-            initClock() { setInterval(() => document.getElementById('tray-clock').innerText = new Date().toLocaleTimeString('en-US',{hour12:false}), 1000); },
-            initTelemetry() { setInterval(() => { document.getElementById('tray-network').className = navigator.onLine ? 'text-green-400' : 'text-red-500 animate-pulse'; document.getElementById('tray-network').innerText = navigator.onLine ? 'NET: OK' : 'NET: ERR'; }, 5000); },
-
-            initWebGLMatrix() {
-                const sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000), ren = new THREE.WebGLRenderer({alpha:true, antialias:true});
-                ren.setSize(window.innerWidth, window.innerHeight); document.getElementById('os-matrix-bg').appendChild(ren.domElement);
-                const geo = new THREE.PlaneGeometry(200, 200, 40, 40), mat = new THREE.MeshBasicMaterial({color:0x06b6d4, wireframe:true, transparent:true, opacity:0.06});
-                const grid = new THREE.Mesh(geo, mat); grid.rotation.x = -Math.PI/2; grid.position.y = -10; sc.add(grid);
-                cam.position.set(0, 5, 20); let t = 0;
-                const anim = () => { requestAnimationFrame(anim); t+=0.003; const pos = grid.geometry.attributes.position; for(let i=0; i<pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i)*0.1+t)*2 + Math.cos(pos.getY(i)*0.1+t)*2); pos.needsUpdate=true; ren.render(sc, cam); }; anim();
-                window.addEventListener('resize', () => { cam.aspect=window.innerWidth/window.innerHeight; cam.updateProjectionMatrix(); ren.setSize(window.innerWidth, window.innerHeight); });
-            },
-
             templates: {
-                mediaRipper: () => `
-                    <div class="flex flex-col h-full gap-4">
-                        <div class="text-rose-400 font-bold border-b border-rose-500/30 pb-2 flex justify-between items-center">
-                            <span>MEDIA RIPPER (YT CAPTURE)</span>
-                            <span class="text-[10px] text-green-400 font-mono flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Node Attached
-                            </span>
-                        </div>
-                        <div class="flex gap-2 shrink-0">
-                            <input type="text" id="media-url" class="flex-1 bg-black/60 border border-white/20 rounded p-3 text-white focus:border-rose-400 outline-none transition font-mono text-sm" placeholder="Paste YouTube link here..." onkeypress="if(event.key === 'Enter') AetherApps.downloadMedia()">
-                            <button onclick="AetherApps.downloadMedia()" class="bg-rose-700/90 hover:bg-rose-600 text-white px-6 py-2 rounded font-bold transition text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(225,29,72,0.3)]">Rip Video</button>
-                        </div>
-                        <div id="media-output" class="flex-1 bg-black/80 border border-white/10 rounded p-4 text-white/70 font-mono text-xs overflow-y-auto space-y-2 shadow-inner">
-                            <div class="text-white/40">> Awaiting target URL. Ready to ping Render execution node...</div>
-                        </div>
-                    </div>
-                `,
-
-                dreamWeaver: () => `
-                    <div class="flex flex-col h-full gap-4">
-                        <div class="flex gap-2 shrink-0">
-                            <input type="text" id="dream-input" class="flex-1 bg-black/60 border border-purple-500/40 rounded p-4 text-white outline-none focus:border-purple-400 transition font-mono text-sm" placeholder="Prompt an image (e.g. 'cyberpunk city night')..." onkeypress="if(event.key === 'Enter') AetherApps.genImage()">
-                            <button onclick="AetherApps.genImage()" class="bg-purple-600 hover:bg-purple-500 text-white px-8 py-4 rounded font-bold transition text-sm uppercase tracking-widest shadow-[0_0_15px_rgba(168,85,247,0.4)]">Generate</button>
-                        </div>
-                        <div class="flex-1 bg-black/80 border border-white/10 rounded-xl flex items-center justify-center overflow-hidden relative shadow-inner group p-2">
-                            <div id="dream-placeholder" class="text-center">
-                                <div class="text-6xl mb-4 opacity-40">🖼️</div>
-                                <p class="text-purple-400/50 font-mono text-sm uppercase tracking-widest">Image Matrix Ready</p>
-                            </div>
-                            <div id="dream-loader" class="hidden absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-10">
-                                <div class="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                                <p class="text-purple-400 font-mono text-xs animate-pulse">Synthesizing Pixels...</p>
-                            </div>
-                            <img id="dream-output" src="" class="hidden w-full h-full object-contain rounded transition-transform duration-700">
-                        </div>
-                    </div>
-                `,
-
-                aiLogic: () => `<div class="flex flex-col h-full"><div id="ai-out" class="flex-1 bg-black/60 border border-white/10 rounded-xl p-4 mb-3 overflow-y-auto font-mono text-sm space-y-3"><div class="text-cyan-300">> System online. How can I assist?</div></div><div class="flex gap-2"><input id="ai-in" class="flex-1 bg-black/60 border border-cyan-500/30 rounded p-3 text-white font-mono text-sm outline-none focus:border-cyan-400" placeholder="Type message..." onkeypress="if(event.key==='Enter') AetherApps.sendChat()"><button onclick="AetherApps.sendChat()" class="bg-cyan-700 hover:bg-cyan-600 px-6 rounded font-bold transition">SEND</button></div></div>`,
-                
-                cipherCore: () => `<div class="flex flex-col h-full gap-3"><textarea id="c-in" class="h-24 bg-black/40 border border-white/20 rounded p-3 text-white font-mono text-sm resize-none outline-none focus:border-yellow-500" placeholder="Paste payload to encrypt/decrypt..."></textarea><div class="grid grid-cols-3 gap-2"><button onclick="AetherApps.runC('b64-enc')" class="bg-yellow-900/40 hover:bg-yellow-600/80 text-yellow-400 hover:text-white rounded text-xs py-2 border border-yellow-600/50 transition font-bold uppercase">B64 Encode</button><button onclick="AetherApps.runC('b64-dec')" class="bg-yellow-900/40 hover:bg-yellow-600/80 text-yellow-400 hover:text-white rounded text-xs py-2 border border-yellow-600/50 transition font-bold uppercase">B64 Decode</button><button onclick="AetherApps.runC('sha256')" class="bg-red-900/40 hover:bg-red-600/80 text-red-400 hover:text-white rounded text-xs py-2 border border-red-600/50 transition font-bold uppercase">SHA-256</button></div><textarea id="c-out" class="flex-1 bg-black/80 border border-white/10 rounded p-3 text-yellow-400 font-mono text-sm break-all resize-none shadow-inner" readonly placeholder="Result output..."></textarea></div>`,
-                
-                dataVault: () => `<div class="flex flex-col h-full relative"><div class="absolute top-2 right-4 text-xs font-mono text-indigo-400/50" id="vault-status">Auto-saving...</div><textarea id="vault-txt" oninput="AetherApps.saveVault(this.value)" class="w-full h-full bg-black/40 border border-indigo-500/30 rounded-xl p-6 text-indigo-100 font-mono resize-none focus:outline-none focus:border-indigo-400 transition" spellcheck="false" placeholder="Persistent LocalStorage Scratchpad..."></textarea></div>`
+                aetherLog: () => `<div id="log-container" class="h-full font-mono text-[10px] text-green-400 space-y-1"></div>`
             }
         };
 
         window.AetherApps = {
-            // BACKEND HANDSHAKE LOGIC
-            launchRipper: () => AetherOS.createWindow('media', 'Media Ripper', AetherOS.templates.mediaRipper(), 550, 450),
-            downloadMedia: () => {
-                const url = document.getElementById('media-url').value.trim();
-                const out = document.getElementById('media-output');
-                if(!url) return;
-                
-                out.innerHTML += `<div class="text-rose-400 font-mono text-xs mt-2">> Establishing secure handshake with Aether Backend...</div>`;
-                out.scrollTop = out.scrollHeight;
-                
-                // PINGING YOUR LIVE RENDER SERVER
-                const backendUrl = `https://aether-backend-t0kx.onrender.com/api/rip?url=${encodeURIComponent(url)}`;
-                window.location.href = backendUrl;
-                
-                setTimeout(() => {
-                    out.innerHTML += `<div class="text-green-400 font-mono text-xs mt-1">> Payload extraction initiated. Node handling conversion... Check your local downloads folder.</div>`;
+            launchLog: () => {
+                AetherOS.createWindow('log', 'System Telemetry', AetherOS.templates.aetherLog(), 400, 300);
+                setInterval(async () => {
+                    const out = document.getElementById('log-container');
+                    if(!out) return;
+                    try {
+                        const r = await fetch('https://aether-backend-t0kx.onrender.com/ping');
+                        const data = await r.json();
+                        out.innerHTML += `<div>[${new Date().toLocaleTimeString()}] NODE: ${data.node} | STATUS: ${data.status}</div>`;
+                    } catch(e) { out.innerHTML += `<div class="text-red-500">[${new Date().toLocaleTimeString()}] CONNECTION_LOST</div>`; }
                     out.scrollTop = out.scrollHeight;
-                    document.getElementById('media-url').value = '';
-                }, 2000);
-            },
-
-            launchDream: () => AetherOS.createWindow('dream', 'Dream Weaver', AetherOS.templates.dreamWeaver(), 600, 550),
-            genImage: () => {
-                const input = document.getElementById('dream-input').value.trim();
-                if (!input) return;
-                document.getElementById('dream-placeholder').classList.add('hidden');
-                document.getElementById('dream-output').classList.add('hidden');
-                document.getElementById('dream-loader').classList.remove('hidden');
-                
-                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?seed=${Math.floor(Math.random()*100000)}&width=1024&height=1024&nologo=true`;
-                const tempImg = new Image();
-                tempImg.onload = () => { 
-                    const out = document.getElementById('dream-output');
-                    out.src = url; 
-                    document.getElementById('dream-loader').classList.add('hidden'); 
-                    out.classList.remove('hidden');
-                };
-                tempImg.onerror = () => {
-                    document.getElementById('dream-loader').classList.add('hidden');
-                    document.getElementById('dream-placeholder').classList.remove('hidden');
-                    alert("Synthesis failed. Try again.");
-                };
-                tempImg.src = url;
-            },
-
-            launchAI: () => AetherOS.createWindow('ai', 'AI Logic Core', AetherOS.templates.aiLogic(), 450, 500),
-            sendChat: async () => {
-                const i = document.getElementById('ai-in'), o = document.getElementById('ai-out');
-                if(!i.value) return; o.innerHTML += `<div class="text-cyan-100 text-right mb-2"><span class="bg-cyan-900/50 px-3 py-1 rounded inline-block border border-cyan-500/30">${i.value}</span></div>`;
-                const id = Date.now(); o.innerHTML += `<div id="l-${id}" class="text-cyan-500 animate-pulse mb-2">> Synthesizing...</div>`;
-                try { const r = await fetch(`https://text.pollinations.ai/${encodeURIComponent(i.value)}`); document.getElementById(`l-${id}`).outerHTML = `<div class="text-blue-100 bg-blue-900/20 p-3 rounded border border-blue-500/20 mb-2 whitespace-pre-wrap">${await r.text()}</div>`; } catch(e){}
-                i.value = ''; o.scrollTop = o.scrollHeight;
-            },
-
-            launchCipher: () => AetherOS.createWindow('ci', 'Cipher Core', AetherOS.templates.cipherCore(), 500, 400),
-            runC: async (a) => {
-                const i = document.getElementById('c-in').value, o = document.getElementById('c-out');
-                if(a==='b64-enc') o.value = btoa(unescape(encodeURIComponent(i)));
-                if(a==='b64-dec') o.value = decodeURIComponent(escape(atob(i)));
-                if(a==='sha256') { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(i)); o.value = Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
-            },
-
-            launchVault: () => {
-                AetherOS.createWindow('dv', 'Data Vault', AetherOS.templates.dataVault(), 400, 350);
-                setTimeout(()=>document.getElementById('vault-txt').value=localStorage.getItem('aether_v')||'',100);
-            },
-            saveVault: (val) => {
-                localStorage.setItem('aether_v', val);
-                const s = document.getElementById('vault-status'); s.innerText="Syncing..."; s.classList.replace('text-indigo-400/50','text-indigo-300');
-                clearTimeout(window.vt); window.vt = setTimeout(()=>{ s.innerText="Auto-saved"; s.classList.replace('text-indigo-300','text-indigo-400/50'); }, 800);
+                }, 5000);
             }
         };
 
-        AetherOS.initStartMenu = function() {
-            const menu = document.createElement('div'); menu.id = 'start-menu';
-            menu.className = 'absolute bottom-[62px] left-2 w-72 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col gap-1 shadow-2xl transition-all duration-200 opacity-0 pointer-events-none scale-95 origin-bottom-left z-[9999]';
-            
-            const btn = (name, icon, fn) => `<button onclick="${fn}" class="w-full text-left px-4 py-3 rounded-lg text-sm font-mono flex items-center gap-3 hover:bg-white/10 transition text-white/90 hover:text-white border border-transparent hover:border-white/5"><span class="text-xl">${icon}</span> ${name}</button>`;
-            
-            menu.innerHTML = `
-                <div class="text-[10px] text-white/40 font-mono uppercase tracking-widest mb-2 border-b border-white/10 pb-2 px-2">Primary Utilities</div>
-                ${btn('Media Ripper', '📥', "AetherApps.launchRipper(); AetherOS.toggleStartMenu(false)")}
-                ${btn('Dream Weaver', '🖼️', "AetherApps.launchDream(); AetherOS.toggleStartMenu(false)")}
-                ${btn('AI Logic Core', '🤖', "AetherApps.launchAI(); AetherOS.toggleStartMenu(false)")}
-                ${btn('Cipher Core', '🔐', "AetherApps.launchCipher(); AetherOS.toggleStartMenu(false)")}
-                ${btn('Data Vault', '💾', "AetherApps.launchVault(); AetherOS.toggleStartMenu(false)")}
-            `;
-            document.getElementById('os-desktop').appendChild(menu);
-            document.getElementById('start-menu-btn').onclick = e => { e.stopPropagation(); this.toggleStartMenu(); };
-            document.addEventListener('mousedown', e => { if(menu.classList.contains('opacity-100') && !menu.contains(e.target) && e.target.id!=='start-menu-btn') this.toggleStartMenu(false); });
-        };
-        AetherOS.toggleStartMenu = function(f=null) { const m = document.getElementById('start-menu'); const s = f!==null?f:!m.classList.contains('opacity-100'); if(s){ m.classList.remove('opacity-0','pointer-events-none','scale-95'); m.classList.add('opacity-100','pointer-events-auto','scale-100'); }else{ m.classList.add('opacity-0','pointer-events-none','scale-95'); m.classList.remove('opacity-100','pointer-events-auto','scale-100'); } };
-
-        window.onload = () => {
-            AetherOS.boot(); setTimeout(() => { AetherOS.initStartMenu(); document.body.classList.remove('os-booting'); }, 1000);
-        };
+        // Start Menu Setup
+        document.getElementById('start-menu-btn').onclick = () => AetherApps.launchLog();
+        setInterval(() => document.getElementById('tray-clock').innerText = new Date().toLocaleTimeString(), 1000);
     </script>
 </body>
 </html>
