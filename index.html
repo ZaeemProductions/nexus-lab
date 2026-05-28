@@ -1,322 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AETHER // Neural Interface</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-:root{
-  --bg:#030712;
-  --glass:rgba(15,23,42,.55);
-  --border:rgba(255,255,255,.08);
-  --text:#e5e7eb;
-  --muted:#94a3b8;
-}
-*{
-  box-sizing:border-box;
-}
-body{
-  margin:0;
-  overflow:hidden;
-  background:radial-gradient(circle at top,#111827,#020617 70%);
-  color:var(--text);
-  font-family:Inter,system-ui,sans-serif;
-}
-#bg{
-  position:fixed;
-  inset:0;
-  z-index:-2;
-}
-.overlay{
-  position:fixed;
-  inset:0;
-  background:
-  linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
-  background-size:40px 40px;
-  z-index:-1;
-}
-.glass{
-  background:var(--glass);
-  backdrop-filter:blur(18px);
-  border:1px solid var(--border);
-  box-shadow:
-  0 10px 40px rgba(0,0,0,.45),
-  inset 0 1px 0 rgba(255,255,255,.05);
-}
-.tab{
-  transition:.25s ease;
-}
-.tab:hover{
-  transform:translateY(-1px);
-}
-.tab.active{
-  background:rgba(99,102,241,.18);
-  border-color:rgba(129,140,248,.5);
-  color:white;
-}
-.tool{
-  display:none;
-  animation:fade .25s ease;
-}
-.tool.active{
-  display:flex;
-}
-@keyframes fade{
-  from{
-    opacity:0;
-    transform:translateY(6px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-.scrollbar::-webkit-scrollbar{
-  width:6px;
-}
-.scrollbar::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,.15);
-  border-radius:999px;
-}
-.input{
-  background:rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.08);
-  color:white;
-  outline:none;
-  transition:.2s ease;
-}
-.input:focus{
-  border-color:rgba(99,102,241,.6);
-  box-shadow:0 0 0 4px rgba(99,102,241,.15);
-}
-.glow{
-  box-shadow:0 0 20px rgba(139,92,246,.25);
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether Lab // Connected Client</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: radial-gradient(circle at center, #0f172a, #000000); 
+      color: #fff; 
+      font-family: system-ui, -apple-system, sans-serif; 
+    }
+    #canvas-container { 
+      position: absolute; 
+      top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+    }
+    .glass { 
+      background: rgba(255, 255, 255, 0.05); 
+      backdrop-filter: blur(10px); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 1rem; 
+    }
+    .tool-tab { display: none !important; }
+    .tool-tab.flex { display: flex !important; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+  </style>
 </head>
-<body class="h-screen p-4 flex flex-col gap-4">
-<div id="bg"></div>
-<div class="overlay"></div>
-<header class="glass rounded-3xl p-4 flex items-center justify-between">
-  <div>
-    <h1 class="text-xl font-black tracking-widest">
-      AETHER
-    </h1>
-    <p class="text-xs text-slate-400">
-      Neural Terminal Interface
-    </p>
-  </div>
-  <div class="flex gap-2">
-    <button data-tool="chat"
-      class="tab active px-4 py-2 rounded-2xl border border-indigo-500/20 text-indigo-300 text-sm font-semibold">
-      🤖 AI
-    </button>
-    <button data-tool="image"
-      class="tab px-4 py-2 rounded-2xl border border-fuchsia-500/20 text-fuchsia-300 text-sm font-semibold">
-      🖼 Dream
-    </button>
-    <button data-tool="vault"
-      class="tab px-4 py-2 rounded-2xl border border-cyan-500/20 text-cyan-300 text-sm font-semibold">
-      💾 Vault
-    </button>
-  </div>
-</header>
-<main class="glass rounded-3xl flex-1 p-5 overflow-hidden">
-  <!-- CHAT -->
-  <section id="chat" class="tool active flex-col h-full">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h2 class="text-indigo-300 font-bold">
-          AI Logic Core
-        </h2>
-        <p class="text-xs text-slate-400">
-          Conversational neural stream
-        </p>
-      </div>
-      <div class="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-        ONLINE
+<body class="h-screen flex flex-col relative p-4">
+
+  <div id="canvas-container"></div>
+
+  <header class="p-6 flex justify-between items-center z-10">
+    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">Aether Lab</h1>
+    <div id="auth-container">
+      <button id="login-btn" class="glass px-6 py-2 hover:bg-white/10 transition font-medium shadow-lg">Sign in</button>
+      <div id="user-info" class="hidden flex items-center gap-3 glass px-4 py-2 shadow-lg">
+        <img id="user-avatar" class="w-8 h-8 rounded-full border border-white/20" src="" alt="Avatar">
+        <span id="user-name" class="font-medium text-sm"></span>
+        <button id="logout-btn" class="text-xs text-red-400 ml-2 hover:text-red-300 transition">Exit</button>
       </div>
     </div>
-    <div id="chatOutput"
-      class="flex-1 overflow-y-auto scrollbar rounded-2xl bg-black/25 border border-white/5 p-4 font-mono text-sm space-y-3">
-      <div class="text-slate-500">
-        System initialized...
+  </header>
+
+  <main class="flex-1 flex flex-col items-center z-10 w-full max-w-5xl mx-auto overflow-hidden">
+    
+    <div class="glass w-full p-4 mb-6 flex flex-wrap justify-center gap-3 shadow-lg">
+      <button onclick="openTool('chat')" class="px-4 py-2 rounded-full border border-blue-500/30 text-blue-300 text-sm font-bold hover:bg-blue-500/20 transition">🤖 AI Core</button>
+      <button onclick="openTool('image')" class="px-4 py-2 rounded-full border border-purple-500/30 text-purple-300 text-sm font-bold hover:bg-purple-500/20 transition">🖼️ Dream</button>
+      <button onclick="openTool('vault')" class="px-4 py-2 rounded-full border border-indigo-500/30 text-indigo-300 text-sm font-bold hover:bg-indigo-500/20 transition">💾 Vault</button>
+      <button onclick="openTool('workers')" class="px-4 py-2 rounded-full border border-teal-500/30 text-teal-300 text-sm font-bold hover:bg-teal-500/20 transition">👷 Workers</button>
+    </div>
+
+    <div class="glass w-full flex-1 flex flex-col relative shadow-2xl overflow-hidden p-6" id="tool-window">
+      
+      <div id="default-view" class="flex-1 flex flex-col items-center justify-center text-center">
+        <div class="text-5xl mb-4 opacity-80 animate-pulse">🌌</div>
+        <h2 class="text-2xl font-bold text-white/90 mb-2">Systems Purged & Optimized</h2>
+        <p class="text-white/50 text-lg">Select a core function to begin.</p>
       </div>
+
+      <div id="tool-chat" class="tool-tab hidden flex-1 flex-col h-full w-full">
+        <h2 class="text-xl font-bold mb-4 text-blue-400 border-b border-white/10 pb-2">AI Logic Core</h2>
+        <div id="chat-out" class="flex-1 glass p-4 mb-4 overflow-y-auto font-mono text-sm space-y-4 bg-black/40 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed text-blue-100 shadow-inner">
+          <div class="text-left"><span class="text-blue-400/50">> System localized. Ready for stream parameters.</span></div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="chat-in" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-blue-400 transition" placeholder="Type instructions...">
+          <button onclick="sendChat()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-widest transition">Send</button>
+        </div>
+      </div>
+
+      <div id="tool-image" class="tool-tab hidden flex-1 flex-col h-full w-full">
+        <h2 class="text-xl font-bold mb-4 text-purple-400 border-b border-white/10 pb-2">Dream Weaver</h2>
+        <div class="flex gap-2 mb-4">
+          <input type="text" id="img-in" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Describe synthetic prompt...">
+          <button onclick="genImg()" class="bg-purple-600 hover:bg-purple-500 px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-widest transition">Synthesize</button>
+        </div>
+        <div id="image-output" class="flex-1 glass flex items-center justify-center bg-black/40 overflow-hidden relative rounded-xl border border-white/5 p-2 shadow-inner">
+          <div id="img-loader" class="hidden text-purple-400 font-mono text-xs animate-pulse">> Initializing graphic engine array...</div>
+          <img id="img-out" src="" class="hidden h-full w-full object-contain rounded-lg transition-all duration-300">
+        </div>
+      </div>
+
+      <div id="tool-vault" class="tool-tab hidden flex-1 flex flex-col h-full w-full">
+        <h2 class="text-xl font-bold mb-4 text-indigo-400 border-b border-white/10 pb-2">Local Vault</h2>
+        <textarea id="vault-in" oninput="saveVault()" class="w-full flex-1 bg-black/40 border border-indigo-500/30 rounded-xl p-6 text-indigo-100 focus:outline-none focus:border-indigo-400 transition font-mono leading-relaxed" spellcheck="false" placeholder="Drop secrets or configurations here. Stays persistent on device runtime."></textarea>
+      </div>
+
+      <div id="tool-workers" class="tool-tab hidden flex-1 flex-col h-full w-full">
+        <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+          <h2 class="text-xl font-bold text-teal-400">Worker Live Registry</h2>
+          <span class="text-xs font-mono bg-teal-950/40 border border-teal-500/30 px-3 py-1 rounded-full text-teal-300">
+            Active Nodes: <span id="worker-count">0</span> / 1000
+          </span>
+        </div>
+        <div class="flex-1 glass bg-black/40 border border-white/5 rounded-xl overflow-hidden flex flex-col">
+          <div class="grid grid-cols-4 bg-teal-950/20 border-b border-white/10 p-3 text-xs font-bold uppercase tracking-wider text-teal-400 font-mono">
+            <div>Node ID</div>
+            <div>Identity Hash</div>
+            <div>Operation State</div>
+            <div class="text-right">Database Sync</div>
+          </div>
+          <div id="worker-list-container" class="flex-1 overflow-y-auto font-mono text-xs divide-y divide-white/5 space-y-0 shadow-inner"></div>
+        </div>
+      </div>
+
     </div>
-    <div class="mt-4 flex gap-3">
-      <input
-        id="chatInput"
-        class="input flex-1 rounded-2xl px-4 py-3"
-        placeholder="Transmit command..."
-      />
-      <button
-        id="sendBtn"
-        class="glow bg-indigo-600 hover:bg-indigo-500 transition px-5 rounded-2xl font-semibold">
-        Send
-      </button>
-    </div>
-  </section>
-  <!-- IMAGE -->
-  <section id="image" class="tool flex-col h-full">
-    <div class="mb-4">
-      <h2 class="text-fuchsia-300 font-bold">
-        Dream Weaver
-      </h2>
-      <p class="text-xs text-slate-400">
-        AI image synthesis interface
-      </p>
-    </div>
-    <input
-      id="imagePrompt"
-      class="input rounded-2xl px-4 py-3"
-      placeholder="Describe a scene..."
-    />
-    <button
-      id="imgBtn"
-      class="mt-3 glow bg-fuchsia-600 hover:bg-fuchsia-500 transition py-3 rounded-2xl font-semibold">
-      Generate Image
-    </button>
-    <div class="flex-1 flex items-center justify-center mt-6 overflow-hidden">
-      <img
-        id="imageOutput"
-        class="max-h-full rounded-3xl border border-white/10 hidden"
-      />
-    </div>
-  </section>
-  <!-- VAULT -->
-  <section id="vault" class="tool flex-col h-full">
-    <div class="mb-4">
-      <h2 class="text-cyan-300 font-bold">
-        Data Vault
-      </h2>
-      <p class="text-xs text-slate-400">
-        Persistent encrypted local notes
-      </p>
-    </div>
-    <textarea
-      id="vaultInput"
-      class="input flex-1 rounded-3xl p-5 resize-none font-mono"
-      placeholder="Store classified data..."
-    ></textarea>
-  </section>
-</main>
-<script>
-const tabs = document.querySelectorAll(".tab");
-const tools = document.querySelectorAll(".tool");
-tabs.forEach(tab=>{
-  tab.addEventListener("click",()=>{
-    tabs.forEach(t=>t.classList.remove("active"));
-    tools.forEach(tool=>tool.classList.remove("active"));
-    tab.classList.add("active");
-    document
-      .getElementById(tab.dataset.tool)
-      .classList.add("active");
-  });
-});
-const chatInput = document.getElementById("chatInput");
-const chatOutput = document.getElementById("chatOutput");
-async function sendMessage(){
-  const text = chatInput.value.trim();
-  if(!text) return;
-  appendMessage("USER",text);
-  chatInput.value="";
-  try{
-    const res = await fetch(
-      `https://text.pollinations.ai/${encodeURIComponent(text)}`
-    );
-    const data = await res.text();
-    appendMessage("AETHER",data);
-  }catch(err){
-    appendMessage("ERROR","Connection failure.");
-  }
-}
-function appendMessage(role,msg){
-  const el = document.createElement("div");
-  el.innerHTML = `
-    <div class="text-xs text-slate-500 mb-1">${role}</div>
-    <div class="bg-white/5 border border-white/5 rounded-2xl p-3 whitespace-pre-wrap">
-      ${msg}
-    </div>
-  `;
-  chatOutput.appendChild(el);
-  chatOutput.scrollTop = chatOutput.scrollHeight;
-}
-document
-  .getElementById("sendBtn")
-  .addEventListener("click",sendMessage);
-chatInput.addEventListener("keydown",(e)=>{
-  if(e.key==="Enter") sendMessage();
-});
-document
-  .getElementById("imgBtn")
-  .addEventListener("click",()=>{
-    const prompt =
-      document.getElementById("imagePrompt").value.trim();
-    if(!prompt) return;
-    const img =
-      document.getElementById("imageOutput");
-    img.src =
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-    img.classList.remove("hidden");
-});
-const vault =
-  document.getElementById("vaultInput");
-vault.value =
-  localStorage.getItem("aetherVault") || "";
-vault.addEventListener("input",()=>{
-  localStorage.setItem("aetherVault",vault.value);
-});
-</script>
-<script>
-const scene = new THREE.Scene();
-const camera =
-  new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
-  );
-const renderer =
-  new THREE.WebGLRenderer({
-    alpha:true,
-    antialias:true
-  });
-renderer.setSize(window.innerWidth,window.innerHeight);
-document
-  .getElementById("bg")
-  .appendChild(renderer.domElement);
-const geometry =
-  new THREE.TorusKnotGeometry(8,1.2,180,32);
-const material =
-  new THREE.MeshBasicMaterial({
-    color:0x8b5cf6,
-    wireframe:true,
-    transparent:true,
-    opacity:.18
-  });
-const mesh =
-  new THREE.Mesh(geometry,material);
-scene.add(mesh);
-camera.position.z = 22;
-function animate(){
-  requestAnimationFrame(animate);
-  mesh.rotation.x += 0.002;
-  mesh.rotation.y += 0.004;
-  renderer.render(scene,camera);
-}
-animate();
-window.addEventListener("resize",()=>{
-  camera.aspect =
-    window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-  );
-});
-</script>
+  </main>
+
+  <footer class="glass m-4 p-3 z-10 h-24 overflow-hidden flex flex-col shadow-lg">
+    <h3 class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">Network Feed</h3>
+    <ul id="activity-feed" class="text-xs text-white/70 space-y-1 overflow-y-auto flex-1 font-mono pr-2">
+      <li>> UI optimized. Utilities loaded.</li>
+    </ul>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, push, onChildAdded, onChildChanged, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAk_rARkhkZGriWHMWkD6vRGhd82Ko32wM",
+      authDomain: "aether-lab.firebaseapp.com",
+      databaseURL: "https://aether-lab-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "aether-lab",
+      storageBucket: "aether-lab.firebasestorage.app",
+      messagingSenderId: "1044048980464",
+      appId: "1:1044048980464:web:f44f00902acf6c4ccc5535"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Secure bridge to pass instances to standard tracking logic securely
+    window.FirebaseGateway = { db, ref, onChildAdded, onChildChanged };
+
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userInfo = document.getElementById('user-info');
+    const userName = document.getElementById('user-name');
+    const userAvatar = document.getElementById('user-avatar');
+    const activityFeed = document.getElementById('activity-feed');
+    const provider = new GoogleAuthProvider();
+    
+    loginBtn.onclick = () => signInWithPopup(auth, provider).catch(console.error);
+    logoutBtn.onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.classList.add('hidden'); userInfo.classList.remove('hidden');
+        userName.textContent = user.displayName; userAvatar.src = user.photoURL;
+        window.globalLogActivity(`${user.displayName} authenticated.`);
+      } else {
+        loginBtn.classList.remove('hidden'); userInfo.classList.add('hidden');
+      }
+    });
+
+    const feedRef = ref(db, 'activity');
+    window.globalLogActivity = function(message) { push(feedRef, { text: message, timestamp: serverTimestamp() }); };
+
+    onChildAdded(feedRef, (data) => {
+      const li = document.createElement('li');
+      li.textContent = `> ${data.val().text}`;
+      activityFeed.prepend(li);
+    });
+  </script>
+
+  <script>
+    function tryLog(msg) { if(window.globalLogActivity) { window.globalLogActivity(msg); } }
+
+    const allTools = ['chat', 'image', 'vault', 'workers'];
+    
+    function openTool(toolName) {
+      const defView = document.getElementById('default-view');
+      if (defView) defView.style.display = 'none';
+      
+      allTools.forEach(t => {
+        const el = document.getElementById('tool-' + t);
+        if(el) { 
+          el.classList.remove('flex');
+          el.classList.add('hidden'); 
+        }
+      });
+      
+      const target = document.getElementById('tool-' + toolName);
+      if(target) {
+        target.classList.remove('hidden');
+        target.classList.add('flex');
+      }
+
+      if (toolName === 'vault') loadVault();
+      if (toolName === 'workers' && !window.databaseConnected) {
+        initWorkersRealtimeSync();
+      }
+    }
+
+    // Client-Side AI Response Engine
+    async function sendChat() {
+        const input = document.getElementById('chat-in');
+        const output = document.getElementById('chat-out');
+        const promptText = input.value.trim();
+        if (!promptText) return;
+
+        output.innerHTML += `<div class="text-white/40 mt-2">> USER: ${promptText}</div>`;
+        const loaderId = 'load-' + Date.now();
+        output.innerHTML += `<div id="${loaderId}" class="text-blue-400 animate-pulse mt-1">> Processing query stream...</div>`;
+        input.value = '';
+        output.scrollTop = output.scrollHeight;
+
+        try {
+            const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptText)}`);
+            document.getElementById(loaderId).remove();
+            output.innerHTML += `<div class="bg-blue-950/20 border border-blue-500/20 p-3 rounded-lg mt-2 text-blue-200">${await res.text()}</div>`;
+        } catch (err) { 
+            document.getElementById(loaderId).className = "text-red-400";
+            document.getElementById(loaderId).innerText = `> Error: Transmission network broken.`; 
+        }
+        output.scrollTop = output.scrollHeight;
+    }
+
+    // Client-Side Graphics Synthesis
+    function genImg() {
+        const input = document.getElementById('img-in').value.trim();
+        if (!input) return;
+
+        const loader = document.getElementById('img-loader');
+        const img = document.getElementById('img-out');
+
+        img.classList.add('hidden');
+        loader.classList.remove('hidden');
+
+        const finalUri = `https://image.pollinations.ai/prompt/${encodeURIComponent(input)}?seed=${Math.floor(Math.random()*99999)}&width=1024&height=1024&nologo=true`;
+        
+        const monitor = new Image();
+        monitor.onload = () => {
+            img.src = finalUri;
+            loader.classList.add('hidden');
+            img.classList.remove('hidden');
+        };
+        monitor.src = finalUri;
+    }
+
+    // Realtime Cloud Data Stream Handler (Syncs directly with your Node backend pushes)
+    function initWorkersRealtimeSync() {
+      const container = document.getElementById('worker-list-container');
+      const counter = document.getElementById('worker-count');
+      if (!container || !window.FirebaseGateway) return;
+
+      window.databaseConnected = true;
+      const { db, ref, onChildAdded, onChildChanged } = window.FirebaseGateway;
+      const workersRef = ref(db, 'workers');
+      let nodeMap = new Map();
+
+      // Triggered automatically when Node script adds an item to the 'workers' path
+      onChildAdded(workersRef, (snapshot) => {
+        const data = snapshot.val();
+        const key = snapshot.key;
+
+        // Ensure UI performance remains lightning fast by pruning entries past 1000 items
+        if (nodeMap.size >= 1000) {
+          const oldestKey = nodeMap.keys().next().value;
+          const oldestRow = document.getElementById(`node-${oldestKey}`);
+          if (oldestRow) oldestRow.remove();
+          nodeMap.delete(oldestKey);
+        }
+
+        const row = document.createElement('div');
+        row.className = "grid grid-cols-4 p-3 hover:bg-white/5 transition items-center text-white/80 border-b border-white/5 font-mono text-xs";
+        row.id = `node-${key}`;
+        
+        const statusColor = data.status === 'Active' ? 'text-green-400' : 'text-amber-400';
+        const formattedTime = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : 'LIVE';
+
+        row.innerHTML = `
+          <div class="font-bold text-teal-500">#${key.substring(0, 6)}</div>
+          <div class="text-white/50 truncate pr-4">${data.name || 'External Node'}</div>
+          <div class="status-cell"><span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${statusColor} mr-1.5 animate-pulse"></span>${data.status || 'Active'}</div>
+          <div class="text-right text-white/40 clock-cell">${formattedTime}</div>
+        `;
+
+        container.prepend(row);
+        nodeMap.set(key, row);
+        counter.innerText = nodeMap.size;
+      });
+
+      // Triggered when a node changes state (e.g. shifts from Processing to Active)
+      onChildChanged(workersRef, (snapshot) => {
+        const key = snapshot.key;
+        const data = snapshot.val();
+        const rowNode = document.getElementById(`node-${key}`);
+        if (rowNode) {
+          const statusCell = rowNode.querySelector('.status-cell');
+          const clockCell = rowNode.querySelector('.clock-cell');
+          if (statusCell) {
+            const statusColor = data.status === 'Active' ? 'text-green-400' : 'text-amber-400';
+            statusCell.innerHTML = `<span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${statusColor} mr-1.5 animate-pulse"></span>${data.status || 'Active'}`;
+          }
+          if (clockCell && data.timestamp) {
+            clockCell.innerText = new Date(data.timestamp).toLocaleTimeString();
+          }
+        }
+      });
+    }
+
+    // Keyboard bindings
+    document.getElementById('chat-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
+    document.getElementById('img-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') genImg(); });
+
+    // Local Storage Data Management Matrix
+    function loadVault() {
+      const input = document.getElementById('vault-in');
+      if(input) input.value = localStorage.getItem('vault') || '';
+    }
+    function saveVault() { 
+      localStorage.setItem('vault', document.getElementById('vault-in').value); 
+    }
+  </script>
+
+  <script>
+    const scene = new THREE.Scene(); 
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); 
+    renderer.setSize(window.innerWidth, window.innerHeight); 
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+    
+    const geometry = new THREE.TorusGeometry(14, 0.1, 16, 100); 
+    const material = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, wireframe: true, transparent: true, opacity: 0.12 });
+    const torus = new THREE.Mesh(geometry, material); 
+    scene.add(torus); 
+    camera.position.z = 25;
+
+    function animate() { 
+      requestAnimationFrame(animate); 
+      torus.rotation.x += 0.0006; 
+      torus.rotation.y += 0.0012; 
+      renderer.render(scene, camera); 
+    } 
+    animate();
+
+    window.addEventListener('resize', () => { 
+      camera.aspect = window.innerWidth / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+      renderer.setSize(window.innerWidth, window.innerHeight); 
+    });
+  </script>
 </body>
 </html>
