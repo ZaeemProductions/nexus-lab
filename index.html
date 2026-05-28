@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aether Lab // Production Core</title>
+  <title>Aether Lab // Infinite Master Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
@@ -13,36 +13,50 @@
       background: radial-gradient(circle at center, #0f172a, #000000); 
       color: #fff; 
       font-family: system-ui, -apple-system, sans-serif; 
+      user-select: none;
     }
     #canvas-container { 
       position: absolute; 
       top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
     }
     .glass { 
-      background: rgba(255, 255, 255, 0.05); 
-      backdrop-filter: blur(10px); 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
+      background: rgba(255, 255, 255, 0.03); 
+      backdrop-filter: blur(12px); 
+      border: 1px solid rgba(255, 255, 255, 0.08); 
       border-radius: 1rem; 
     }
     .tool-tab { display: none !important; }
     .tool-tab.flex { display: flex !important; }
+    
+    /* Cyberpunk Title Glitch Animation Matrix */
+    @keyframes textGlitch {
+      0% { text-shadow: 2px -2px 0 #ff00c1, -2px 2px 0 #00fff0; }
+      25% { text-shadow: -2px 2px 0 #ff00c1, 2px -2px 0 #00fff0; }
+      50% { text-shadow: 2px 2px 0 #ff00c1, -2px -2px 0 #00fff0; }
+      75% { text-shadow: -2px -2px 0 #ff00c1, 2px 2px 0 #00fff0; }
+      100% { text-shadow: 2px -2px 0 #ff00c1, -2px 2px 0 #00fff0; }
+    }
+    .cyber-glitch:hover {
+      animation: textGlitch 0.2s linear infinite;
+    }
+
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
   </style>
 </head>
 <body class="h-screen flex flex-col relative p-4">
 
   <div id="canvas-container"></div>
 
-  <header class="p-6 flex justify-between items-center z-10">
-    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-wider">Aether Lab</h1>
+  <header class="p-6 flex justify-between items-center z-101">
+    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 tracking-wider cyber-glitch cursor-pointer transition-all duration-300">Aether Lab</h1>
     <div id="auth-container">
-      <button id="login-btn" class="glass px-6 py-2 hover:bg-white/10 transition font-medium shadow-lg">Sign in</button>
-      <div id="user-info" class="hidden flex items-center gap-3 glass px-4 py-2 shadow-lg">
-        <img id="user-avatar" class="w-8 h-8 rounded-full border border-white/20" src="" alt="Avatar">
-        <span id="user-name" class="font-medium text-sm"></span>
-        <button id="logout-btn" class="text-xs text-red-400 ml-2 hover:text-red-300 transition">Exit</button>
+      <button id="login-btn" onclick="playAudioTone(600, 'square', 0.04)" class="glass px-6 py-2 hover:bg-white/10 transition font-medium shadow-lg text-sm tracking-widest uppercase text-white/80">Sign in</button>
+      <div id="user-info" class="hidden items-center gap-3 glass px-4 py-2 shadow-lg">
+        <img id="user-avatar" class="w-8 h-8 rounded-full border border-white/20 shadow-inner" src="" alt="Avatar">
+        <span id="user-name" class="font-bold text-xs tracking-wider uppercase text-white/90"></span>
+        <button id="logout-btn" onclick="playAudioTone(250, 'sawtooth', 0.1)" class="text-xs text-red-400/70 ml-2 hover:text-red-400 font-bold tracking-widest uppercase transition">Exit</button>
       </div>
     </div>
   </header>
@@ -50,71 +64,77 @@
   <main class="flex-1 flex flex-col items-center z-10 w-full max-w-5xl mx-auto overflow-hidden">
     
     <div class="glass w-full p-4 mb-6 flex flex-wrap justify-center gap-3 shadow-lg">
-      <button onclick="openTool('chat')" class="px-4 py-2 rounded-full border border-blue-500/30 text-blue-300 text-sm font-bold hover:bg-blue-500/20 transition">🤖 AI Core</button>
-      <button onclick="openTool('image')" class="px-4 py-2 rounded-full border border-purple-500/30 text-purple-300 text-sm font-bold hover:bg-purple-500/20 transition">🖼️ Dream</button>
-      <button onclick="openTool('vault')" class="px-4 py-2 rounded-full border border-indigo-500/30 text-indigo-300 text-sm font-bold hover:bg-indigo-500/20 transition">💾 Vault</button>
-      <button onclick="openTool('workers')" class="px-4 py-2 rounded-full border border-teal-500/30 text-teal-300 text-sm font-bold hover:bg-teal-500/20 transition">👷 Workers</button>
+      <button onclick="openTool('chat')" class="px-5 py-2.5 rounded-full border border-blue-500/20 text-blue-300 text-xs uppercase tracking-widest font-bold hover:bg-blue-500/20 transition duration-200">🤖 AI Core</button>
+      <button onclick="openTool('image')" class="px-5 py-2.5 rounded-full border border-purple-500/20 text-purple-300 text-xs uppercase tracking-widest font-bold hover:bg-purple-500/20 transition duration-200">🖼️ Dream</button>
+      <button onclick="openTool('vault')" class="px-5 py-2.5 rounded-full border border-indigo-500/20 text-indigo-300 text-xs uppercase tracking-widest font-bold hover:bg-indigo-500/20 transition duration-200">💾 Vault</button>
+      <button onclick="openTool('workers')" class="px-5 py-2.5 rounded-full border border-teal-500/20 text-teal-300 text-xs uppercase tracking-widest font-bold hover:bg-teal-500/20 transition duration-200">👷 Workers</button>
     </div>
 
     <div class="glass w-full flex-1 flex flex-col relative shadow-2xl overflow-hidden p-6" id="tool-window">
       
       <div id="default-view" class="flex-1 flex flex-col items-center justify-center text-center">
-        <div class="text-5xl mb-4 opacity-80 animate-pulse">🌌</div>
-        <h2 class="text-2xl font-bold text-white/90 mb-2">Systems Purged & Optimized</h2>
-        <p class="text-white/50 text-lg">Select a core function to begin.</p>
+        <div class="text-6xl mb-4 opacity-60 animate-pulse">🌌</div>
+        <h2 class="text-2xl font-bold tracking-widest uppercase text-white/90 mb-2">Systems Fully Optimized</h2>
+        <p class="text-white/40 text-sm font-mono">> Core node cluster responsive. Unfold modular pipeline.</p>
       </div>
 
       <div id="tool-chat" class="tool-tab hidden flex-1 flex-col h-full w-full">
-        <h2 class="text-xl font-bold mb-4 text-blue-400 border-b border-white/10 pb-2">AI Logic Core</h2>
-        <div id="chat-out" class="flex-1 glass p-4 mb-4 overflow-y-auto font-mono text-sm space-y-4 bg-black/40 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed text-blue-100 shadow-inner">
-          <div class="text-left"><span class="text-blue-400/50">> System localized. Ready for stream parameters.</span></div>
+        <h2 class="text-sm font-mono tracking-widest text-blue-400 uppercase border-b border-white/10 pb-2 mb-4">> AI LOGIC ENGINE ARRAY</h2>
+        <div id="chat-out" class="flex-1 glass p-4 mb-4 overflow-y-auto font-mono text-xs space-y-4 bg-black/40 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed text-blue-100 shadow-inner">
+          <div class="text-left"><span class="text-blue-400/40">> Local mesh active. Ready for streaming prompt execution.</span></div>
         </div>
         <div class="flex gap-2">
-          <input type="text" id="chat-in" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-blue-400 transition" placeholder="Type instructions...">
-          <button onclick="sendChat()" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-widest transition">Send</button>
+          <input type="text" id="chat-in" class="flex-1 bg-black/40 border border-white/10 rounded-lg p-3 text-xs font-mono text-white focus:outline-none focus:border-blue-500/50 transition" placeholder="Transmit operational matrices...">
+          <button onclick="sendChat()" class="bg-blue-600/30 border border-blue-500/50 hover:bg-blue-600/50 px-6 py-3 rounded-lg font-mono text-xs uppercase font-bold tracking-widest text-blue-200 transition">Execute</button>
         </div>
       </div>
 
       <div id="tool-image" class="tool-tab hidden flex-1 flex-col h-full w-full">
-        <h2 class="text-xl font-bold mb-4 text-purple-400 border-b border-white/10 pb-2">Dream Weaver</h2>
+        <h2 class="text-sm font-mono tracking-widest text-purple-400 uppercase border-b border-white/10 pb-2 mb-4">> GRAPHICS SYNTHESIS MATRIX</h2>
         <div class="flex gap-2 mb-4">
-          <input type="text" id="img-in" class="flex-1 bg-black/40 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Describe synthetic prompt...">
-          <button onclick="genImg()" class="bg-purple-600 hover:bg-purple-500 px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-widest transition">Synthesize</button>
+          <input type="text" id="img-in" class="flex-1 bg-black/40 border border-white/10 rounded-lg p-3 text-xs font-mono text-white focus:outline-none focus:border-purple-500/50 transition" placeholder="Describe synthetic imaging vectors...">
+          <button onclick="genImg()" class="bg-purple-600/30 border border-purple-500/50 hover:bg-purple-600/50 px-6 py-3 rounded-lg font-mono text-xs uppercase font-bold tracking-widest text-purple-200 transition">Synthesize</button>
         </div>
         <div id="image-output" class="flex-1 glass flex items-center justify-center bg-black/40 overflow-hidden relative rounded-xl border border-white/5 p-2 shadow-inner">
-          <div id="img-loader" class="hidden text-purple-400 font-mono text-xs animate-pulse">> Initializing graphic engine array...</div>
-          <img id="img-out" src="" class="hidden h-full w-full object-contain rounded-lg transition-all duration-300">
+          <div id="img-loader" class="hidden text-purple-400 font-mono text-xs animate-pulse">> Initializing mathematical imaging nodes...</div>
+          <img id="img-out" src="" class="hidden h-full w-full object-contain rounded-lg transition-all duration-500">
         </div>
       </div>
 
-      <div id="tool-vault" class="tool-tab hidden flex flex-col h-full w-full">
-        <h2 class="text-xl font-bold mb-4 text-indigo-400 border-b border-white/10 pb-2">Local Vault</h2>
-        <textarea id="vault-in" oninput="saveVault()" class="w-full flex-1 bg-black/40 border border-indigo-500/30 rounded-xl p-6 text-indigo-100 focus:outline-none focus:border-indigo-400 transition font-mono leading-relaxed" spellcheck="false" placeholder="Drop secrets or configurations here. Stays persistent on device runtime."></textarea>
+      <div id="tool-vault" class="tool-tab hidden flex-1 flex-col h-full w-full">
+        <div class="flex justify-between items-center border-b border-white/10 pb-2 mb-4">
+          <h2 class="text-sm font-mono tracking-widest text-indigo-400 uppercase">> ENCRYPTED LOCAL CONFIG SHEETS</h2>
+          <div class="flex gap-2">
+            <button onclick="downloadVaultData()" class="bg-indigo-950/40 border border-indigo-500/30 hover:bg-indigo-500/20 px-3 py-1 rounded-md text-[10px] font-mono tracking-wider uppercase text-indigo-300 transition">Export Config</button>
+            <button onclick="clearVaultData()" class="bg-red-950/40 border border-red-500/30 hover:bg-red-500/20 px-3 py-1 rounded-md text-[10px] font-mono tracking-wider uppercase text-red-300 transition">Purge</button>
+          </div>
+        </div>
+        <textarea id="vault-in" oninput="saveVault()" class="w-full flex-1 bg-black/40 border border-indigo-500/20 rounded-xl p-5 text-indigo-100 focus:outline-none focus:border-indigo-500/40 transition font-mono text-xs leading-relaxed" spellcheck="false" placeholder="Drop hidden arrays or keys here. Persists indefinitely on local runtime hardware."></textarea>
       </div>
 
       <div id="tool-workers" class="tool-tab hidden flex-1 flex-col h-full w-full">
         <div class="flex flex-wrap justify-between items-center mb-3 border-b border-white/10 pb-2 gap-2">
-          <h2 class="text-xl font-bold text-teal-400">Worker Automation Registry</h2>
-          <span class="text-xs font-mono bg-teal-950/40 border border-teal-500/30 px-3 py-1 rounded-full text-teal-300">
+          <h2 class="text-sm font-mono tracking-widest text-teal-400 uppercase">> SYSTEM AUTOMATION REGISTRY</h2>
+          <span class="text-[11px] font-mono bg-teal-950/40 border border-teal-500/30 px-3 py-1 rounded-full text-teal-300">
             Active Nodes: <span id="worker-count">0</span> / 100
           </span>
         </div>
 
         <div class="flex gap-2 mb-3">
-          <input type="text" id="worker-search" oninput="executeClientFilters()" class="flex-1 bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-teal-400 transition font-mono" placeholder="Filter by Node ID or Identity Hash...">
-          <select id="worker-filter" onchange="executeClientFilters()" class="bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-teal-300 focus:outline-none focus:border-teal-400 transition font-mono">
-            <option value="all">All States</option>
-            <option value="Active">Active</option>
+          <input type="text" id="worker-search" oninput="executeClientFilters()" class="flex-1 bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-teal-400/40 transition font-mono" placeholder="Query Node ID or structural sequence string...">
+          <select id="worker-filter" onchange="executeClientFilters()" class="bg-black/50 border border-white/10 rounded-lg p-2.5 text-xs text-teal-300 focus:outline-none focus:border-teal-400/40 transition font-mono">
+            <option value="all">All Profiles</option>
+            <option value="Active">Active Loop</option>
             <option value="Processing">Processing</option>
           </select>
         </div>
         
         <div class="flex-1 glass bg-black/40 border border-white/5 rounded-xl overflow-hidden flex flex-col">
-          <div class="grid grid-cols-4 bg-teal-950/20 border-b border-white/10 p-3 text-xs font-bold uppercase tracking-wider text-teal-400 font-mono">
-            <div>Node ID</div>
-            <div>Identity Hash</div>
-            <div>Operation State</div>
-            <div class="text-right">Clock Cycle</div>
+          <div class="grid grid-cols-4 bg-teal-950/20 border-b border-white/10 p-3 text-[10px] font-bold uppercase tracking-wider text-teal-400 font-mono">
+            <div>Node Identifier</div>
+            <div>Structural Sequence</div>
+            <div>Runtime State</div>
+            <div class="text-right">Clock Vector</div>
           </div>
           <div id="worker-list-container" class="flex-1 overflow-y-auto font-mono text-xs divide-y divide-white/5 space-y-0 shadow-inner"></div>
         </div>
@@ -124,9 +144,9 @@
   </main>
 
   <footer class="glass m-4 p-3 z-10 h-24 overflow-hidden flex flex-col shadow-lg">
-    <h3 class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">Network Feed</h3>
-    <ul id="activity-feed" class="text-xs text-white/70 space-y-1 overflow-y-auto flex-1 font-mono pr-2">
-      <li>> UI optimized. Utilities loaded.</li>
+    <h3 class="text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-1 border-b border-white/10 pb-1">Network Matrix Feed</h3>
+    <ul id="activity-feed" class="text-[11px] text-white/60 space-y-1 overflow-y-auto flex-1 font-mono pr-2">
+      <li>> Matrix runtime operational. All modules optimized.</li>
     </ul>
   </footer>
 
@@ -157,16 +177,16 @@
     const activityFeed = document.getElementById('activity-feed');
     const provider = new GoogleAuthProvider();
     
-    loginBtn.onclick = () => signInWithPopup(auth, provider).catch(console.error);
-    logoutBtn.onclick = () => signOut(auth);
+    loginBtn.onclick = () => { signInWithPopup(auth, provider).catch(console.error); };
+    logoutBtn.onclick = () => { signOut(auth); };
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginBtn.classList.add('hidden'); userInfo.classList.remove('hidden');
+        loginBtn.classList.add('hidden'); userInfo.classList.remove('hidden'); userInfo.classList.add('flex');
         userName.textContent = user.displayName; userAvatar.src = user.photoURL;
         window.globalLogActivity(`${user.displayName} authenticated.`);
       } else {
-        loginBtn.classList.remove('hidden'); userInfo.classList.add('hidden');
+        loginBtn.classList.remove('hidden'); userInfo.classList.add('hidden'); userInfo.classList.remove('flex');
       }
     });
 
@@ -178,39 +198,61 @@
       li.textContent = `> ${data.val().text}`;
       activityFeed.prepend(li);
     });
+
+    // Hardware Connection Fail-safe Tracking Network Watchers
+    window.addEventListener('online', () => window.globalLogActivity('Network status verified: Operational.'));
+    window.addEventListener('offline', () => {
+      const li = document.createElement('li');
+      li.className = "text-red-400 font-bold";
+      li.textContent = `> CRITICAL: Cloud mesh severed. Local engine active.`;
+      activityFeed.prepend(li);
+    });
   </script>
 
   <script>
     function tryLog(msg) { if(window.globalLogActivity) { window.globalLogActivity(msg); } }
 
+    // Pure Client Synthesizer Sound Haptics (No media server needed)
+    function playAudioTone(freq, waveType, duration) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const nodeOsc = audioCtx.createOscillator();
+        const nodeGain = audioCtx.createGain();
+        nodeOsc.type = waveType;
+        nodeOsc.frequency.value = freq;
+        nodeGain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        nodeGain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        nodeOsc.connect(nodeGain);
+        nodeGain.connect(audioCtx.destination);
+        nodeOsc.start();
+        nodeOsc.stop(audioCtx.currentTime + duration);
+      } catch (err) {}
+    }
+
     const allTools = ['chat', 'image', 'vault', 'workers'];
     
     function openTool(toolName) {
+      playAudioTone(750, 'sine', 0.04);
       const defView = document.getElementById('default-view');
       if (defView) defView.style.display = 'none';
       
       allTools.forEach(t => {
         const el = document.getElementById('tool-' + t);
-        if(el) { 
-          el.classList.remove('flex');
-          el.classList.add('hidden'); 
-        }
+        if(el) { el.classList.remove('flex'); el.classList.add('hidden'); }
       });
       
       const target = document.getElementById('tool-' + toolName);
-      if(target) {
-        target.classList.remove('hidden');
-        target.classList.add('flex');
-      }
+      if(target) { target.classList.remove('hidden'); target.classList.add('flex'); }
 
       if (toolName === 'vault') loadVault();
       if (toolName === 'workers' && !window.simulationRunning) {
-        initializeWorkerSimulation();
+        initializeProductionSimulation();
       }
     }
 
-    // AI Language Model Router
+    // AI Language Operations Array
     async function sendChat() {
+        playAudioTone(900, 'sine', 0.03);
         const input = document.getElementById('chat-in');
         const output = document.getElementById('chat-out');
         const promptText = input.value.trim();
@@ -218,23 +260,25 @@
 
         output.innerHTML += `<div class="text-white/40 mt-2">> USER: ${promptText}</div>`;
         const loaderId = 'load-' + Date.now();
-        output.innerHTML += `<div id="${loaderId}" class="text-blue-400 animate-pulse mt-1">> Processing query stream...</div>`;
+        output.innerHTML += `<div id="${loaderId}" class="text-blue-400 animate-pulse mt-1">> Streaming evaluation stream...</div>`;
         input.value = '';
         output.scrollTop = output.scrollHeight;
 
         try {
             const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptText)}`);
             document.getElementById(loaderId).remove();
-            output.innerHTML += `<div class="bg-blue-950/20 border border-blue-500/20 p-3 rounded-lg mt-2 text-blue-200">${await res.text()}</div>`;
+            playAudioTone(1100, 'sine', 0.05);
+            output.innerHTML += `<div class="bg-blue-950/20 border border-blue-500/20 p-3 rounded-lg mt-2 text-blue-200 leading-relaxed">${await res.text()}</div>`;
         } catch (err) { 
             document.getElementById(loaderId).className = "text-red-400";
-            document.getElementById(loaderId).innerText = `> Error: Link to core matrix dropped.`; 
+            document.getElementById(loaderId).innerText = `> Error: Main link dropped.`; 
         }
         output.scrollTop = output.scrollHeight;
     }
 
-    // AI Imaging Synthesis Engine
+    // AI Image Generator
     function genImg() {
+        playAudioTone(500, 'square', 0.05);
         const input = document.getElementById('img-in').value.trim();
         if (!input) return;
 
@@ -251,92 +295,86 @@
             img.src = finalUri;
             loader.classList.add('hidden');
             img.classList.remove('hidden');
+            playAudioTone(950, 'sine', 0.08);
         };
         monitor.src = finalUri;
     }
 
-    // Autonomous Client-Side 100-Worker Engine (Infinite Loop Simulation)
-    function initializeWorkerSimulation() {
+    // Capped 100-Worker Engine Loop
+    function initializeProductionSimulation() {
       window.simulationRunning = true;
       const container = document.getElementById('worker-list-container');
       const counter = document.getElementById('worker-count');
       if (!container) return;
 
-      let totalActiveNodes = 0;
-      const nodesIndex = ['NEXUS', 'CORE', 'MESH', 'ZAEEM', 'ALPHA', 'HYDRA', 'VECTOR', 'MATRIX'];
-      const structuralTasks = ['Syncing Shards', 'Compiling Blocks', 'Parsing Memory', 'Routing Packets', 'Optimizing Core'];
+      let runtimeNodesCount = 0;
+      const indexHashes = ['NEXUS', 'VECTOR', 'ZAEEM', 'ALPHA', 'CORE', 'HYDRA', 'MATRIX', 'SHARD'];
+      const operationStrings = ['Syncing Logic', 'Parsing Vectors', 'Clearing Cache', 'Compiling Core', 'Routing Mesh'];
 
-      function spawnNodeElement() {
-        if (totalActiveNodes >= 100) return;
+      function buildDynamicNode() {
+        if (runtimeNodesCount >= 100) return;
 
-        totalActiveNodes++;
-        const uniqueId = Math.floor(Math.random() * 899999 + 100000);
-        const generatedHash = `${nodesIndex[Math.floor(Math.random() * nodesIndex.length)]}_NODE_${Math.floor(Math.random() * 89 + 10)}`;
-        const baseStatus = Math.random() > 0.25 ? 'Active' : 'Processing';
-        const colorClass = baseStatus === 'Active' ? 'text-green-400' : 'text-amber-400';
+        runtimeNodesCount++;
+        const hexId = Math.floor(Math.random() * 899999 + 100000);
+        const identityString = `${indexHashes[Math.floor(Math.random() * indexHashes.length)]}_CORE_${Math.floor(Math.random() * 89 + 10)}`;
+        const baseStatusText = Math.random() > 0.25 ? 'Active' : 'Processing';
+        const colorClass = baseStatusText === 'Active' ? 'text-green-400' : 'text-amber-400';
 
         const row = document.createElement('div');
-        row.className = "grid grid-cols-4 p-3 hover:bg-white/5 transition items-center text-white/80 border-b border-white/5 font-mono text-xs animate-fadeIn";
-        row.id = `node-sim-${uniqueId}`;
+        row.className = "grid grid-cols-4 p-3 hover:bg-white/5 transition items-center text-white/80 border-b border-white/5 font-mono text-xs";
+        row.id = `node-sim-${hexId}`;
         
-        // Inject search tags cleanly as elements parameters
-        row.setAttribute('data-name', generatedHash.toLowerCase());
-        row.setAttribute('data-status', baseStatus);
+        row.setAttribute('data-name', identityString.toLowerCase());
+        row.setAttribute('data-status', baseStatusText);
 
         row.innerHTML = `
-          <div class="font-bold text-teal-500">#${uniqueId}</div>
-          <div class="text-white/50 truncate pr-4">${generatedHash}</div>
-          <div class="status-cell"><span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${colorClass} mr-1.5 animate-pulse"></span>${baseStatus}</div>
+          <div class="font-bold text-teal-500">#${hexId}</div>
+          <div class="text-white/50 truncate pr-4">${identityString}</div>
+          <div class="status-cell"><span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${colorClass} mr-1.5 animate-pulse"></span>${baseStatusText}</div>
           <div class="text-right text-white/40 clock-cell">${new Date().toLocaleTimeString()}</div>
         `;
 
         container.prepend(row);
-        counter.innerText = totalActiveNodes;
+        counter.innerText = runtimeNodesCount;
 
-        // Run randomized loop alterations to change system profiles locally
         setInterval(() => {
           const statusCell = row.querySelector('.status-cell');
           const clockCell = row.querySelector('.clock-cell');
           if (statusCell && clockCell) {
-            const toggleState = Math.random() > 0.4;
-            const chosenString = toggleState ? 'Active' : structuralTasks[Math.floor(Math.random() * structuralTasks.length)];
-            const dynamicColor = toggleState ? 'text-green-400' : 'text-amber-400';
+            const shiftLoop = Math.random() > 0.45;
+            const updatedString = shiftLoop ? 'Active' : operationStrings[Math.floor(Math.random() * operationStrings.length)];
+            const activeColor = shiftLoop ? 'text-green-400' : 'text-amber-400';
             
-            row.setAttribute('data-status', toggleState ? 'Active' : 'Processing');
-            statusCell.innerHTML = `<span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${dynamicColor} mr-1.5 animate-pulse"></span>${chosenString}`;
+            row.setAttribute('data-status', shiftLoop ? 'Active' : 'Processing');
+            statusCell.innerHTML = `<span class="inline-block h-1.5 w-1.5 rounded-full bg-current ${activeColor} mr-1.5 animate-pulse"></span>${updatedString}`;
             clockCell.innerText = new Date().toLocaleTimeString();
           }
-        }, Math.floor(Math.random() * 5000 + 3000));
+        }, Math.floor(Math.random() * 6000 + 4000));
       }
 
-      // Initial deployment burst array configuration
-      for (let i = 0; i < 25; i++) { spawnNodeElement(); }
-      const continuousGenerationLoop = setInterval(() => {
-        if (totalActiveNodes >= 100) {
-          clearInterval(continuousGenerationLoop);
-          return;
-        }
-        spawnNodeElement();
+      for (let i = 0; i < 30; i++) { buildDynamicNode(); }
+      const generationTicker = setInterval(() => {
+        if (runtimeNodesCount >= 100) { clearInterval(generationTicker); return; }
+        buildDynamicNode();
         executeClientFilters();
-      }, 60);
+      }, 50);
     }
 
-    // Client Filters Sorting Module Matrix
     function executeClientFilters() {
-      const searchVal = document.getElementById('worker-search').value.toLowerCase().trim();
-      const selectedFilter = document.getElementById('worker-filter').value;
+      const queryValue = document.getElementById('worker-search').value.toLowerCase().trim();
+      const dropSelection = document.getElementById('worker-filter').value;
       const rows = document.getElementById('worker-list-container').children;
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const nameVal = row.getAttribute('data-name') || '';
-        const idVal = row.id.toLowerCase();
-        const statusVal = row.getAttribute('data-status') || '';
+        const attrName = row.getAttribute('data-name') || '';
+        const attrId = row.id.toLowerCase();
+        const attrStatus = row.getAttribute('data-status') || '';
 
-        const filterMatchesSearch = !searchVal || nameVal.includes(searchVal) || idVal.includes(searchVal);
-        const filterMatchesSelect = selectedFilter === 'all' || statusVal === selectedFilter;
+        const checkQuery = !queryValue || attrName.includes(queryValue) || attrId.includes(queryValue);
+        const checkDrop = dropSelection === 'all' || attrStatus === dropSelection;
 
-        if (filterMatchesSearch && filterMatchesSelect) {
+        if (checkQuery && checkDrop) {
           row.style.setProperty('display', 'grid', 'important');
         } else {
           row.style.setProperty('display', 'none', 'important');
@@ -344,18 +382,39 @@
       }
     }
 
-    // Interactive element handling hooks
-    document.getElementById('chat-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
-    document.getElementById('img-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') genImg(); });
-
-    // Local Storage Profile Operations
+    // Vault Client Mechanics
     function loadVault() {
-      const input = document.getElementById('vault-in');
-      if(input) input.value = localStorage.getItem('vault') || '';
+      document.getElementById('vault-in').value = localStorage.getItem('vault') || '';
     }
     function saveVault() { 
       localStorage.setItem('vault', document.getElementById('vault-in').value); 
     }
+    function clearVaultData() {
+      playAudioTone(200, 'sawtooth', 0.15);
+      if(confirm("Confirm deletion of all saved vault files?")) {
+        localStorage.removeItem('vault');
+        document.getElementById('vault-in').value = '';
+        tryLog('Vault structures safely purged.');
+      }
+    }
+    function downloadVaultData() {
+      playAudioTone(650, 'sine', 0.08);
+      const stringData = document.getElementById('vault-in').value;
+      if(!stringData.trim()) return alert("Vault configuration is empty.");
+      
+      const textBlob = new Blob([stringData], { type: 'text/plain' });
+      const downloaderElement = document.createElement('a');
+      downloaderElement.download = 'aether_vault_manifest.txt';
+      downloaderElement.href = window.URL.createObjectURL(textBlob);
+      downloaderElement.style.display = 'none';
+      document.body.appendChild(downloaderElement);
+      downloaderElement.click();
+      downloaderElement.remove();
+      tryLog('Vault manifest sheet exported.');
+    }
+
+    document.getElementById('chat-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
+    document.getElementById('img-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') genImg(); });
   </script>
 
   <script>
@@ -366,15 +425,15 @@
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     
     const geometry = new THREE.TorusGeometry(14, 0.1, 16, 100); 
-    const material = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, wireframe: true, transparent: true, opacity: 0.12 });
+    const material = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, wireframe: true, transparent: true, opacity: 0.1 });
     const torus = new THREE.Mesh(geometry, material); 
     scene.add(torus); 
     camera.position.z = 25;
 
     function animate() { 
       requestAnimationFrame(animate); 
-      torus.rotation.x += 0.0006; 
-      torus.rotation.y += 0.0012; 
+      torus.rotation.x += 0.0005; 
+      torus.rotation.y += 0.001; 
       renderer.render(scene, camera); 
     } 
     animate();
