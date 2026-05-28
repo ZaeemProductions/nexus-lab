@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const ytdl = require('@distube/ytdl-core');
+const play = require('play-dl');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +14,7 @@ app.get('/ping', (req, res) => {
   res.status(200).send('Pong! Aether Backend is wide awake.');
 });
 
-// 🔴 The Extraction Matrix
+// 🔴 The Stealth Extraction Matrix
 app.get('/api/rip', async (req, res) => {
   try {
     const videoUrl = req.query.url; 
@@ -23,24 +23,19 @@ app.get('/api/rip', async (req, res) => {
       return res.status(400).send('Extraction Matrix Error: No video URL provided.');
     }
 
-    // Force the browser to download the file instead of playing it
+    // Tell the browser to download the file
     res.header('Content-Disposition', 'attachment; filename="Aether_Extraction.mp4"');
     
-    // Rip and stream the video directly to the client, WITH error handling
-    ytdl(videoUrl, { format: 'mp4' })
-      .on('error', (err) => {
-        console.error('YouTube Stream Error:', err.message);
-        // Only send an error response if the download hasn't already started
-        if (!res.headersSent) {
-          res.status(429).send('Extraction Matrix Failed: YouTube blocked the request (HTTP 429).');
-        }
-      })
-      .pipe(res);
+    // Fetch the stream using the stealthier play-dl package
+    const stream = await play.stream(videoUrl);
+    
+    // Pipe the stream directly to the client
+    stream.stream.pipe(res);
 
   } catch (error) {
-    console.error('Extraction error:', error);
+    console.error('Extraction error:', error.message);
     if (!res.headersSent) {
-      res.status(500).send('Extraction Matrix Failed: Could not process the video.');
+      res.status(500).send(`Extraction Matrix Failed: ${error.message}`);
     }
   }
 });
