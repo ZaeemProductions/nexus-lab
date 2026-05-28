@@ -1,645 +1,258 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Cadet Mission Coaching Center. Be Active, Be Creative</title>
-	<meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Links -->
-    <link rel="icon" href="/asset/frontend_asset/assets/img/core/fav.png"/>
-    <!-- Bootstrap Css -->
-    <link rel="stylesheet" type="text/css" href="/asset/frontend_asset/assets/css/bootstrap.css">
-    <!-- Nice Select Css -->
-    <link rel="stylesheet" href="/asset/frontend_asset/assets/css/nice-select.css"/>
-    <!-- Select2 Css -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- Slick Slider -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/SlickNav/1.0.10/slicknav.min.css" rel="stylesheet"/>
-    <!-- Template Css -->
-    <link rel="stylesheet" type="text/css" href="/asset/frontend_asset/assets/css/style.css">
-    <link rel="stylesheet" type="text/css" href="/asset/frontend_asset/assets/css/responsive.css">
-    <link rel="stylesheet" href="https://cadetmission.com/asset/toastr.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Aether Strike // Deadshot Core</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #040711; 
+      color: #fff; 
+      font-family: system-ui, -apple-system, sans-serif; 
+      user-select: none;
+    }
+    #canvas-container { 
+      position: fixed; 
+      top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
+      pointer-events: none;
+    }
+    .main-layout {
+      position: relative;
+      z-index: 10;
+      height: 100vh;
+      width: 100vw;
+    }
+    .glass { 
+      background: rgba(10, 15, 30, 0.85); 
+      backdrop-filter: blur(14px); 
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08); 
+    }
+    /* Fixed Frame Routing to Lock iPad Safari Viewport Choking */
+    .game-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 5;
+      background: #000;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .hud-overlay {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 100;
+      pointer-events: auto;
+    }
+    .control-sidebar {
+      position: absolute;
+      top: 0; right: -320px; width: 320px; height: 100%;
+      z-index: 101;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+    }
+    .control-sidebar.open { right: 0; }
     
+    @keyframes textGlitch {
+      0% { text-shadow: 2px -2px 0 #ff00c1, -2px 2px 0 #00fff0; }
+      25% { text-shadow: -2px 2px 0 #ff00c1, 2px -2px 0 #00fff0; }
+      50% { text-shadow: 2px 2px 0 #ff00c1, -2px -2px 0 #00fff0; }
+      75% { text-shadow: -2px -2px 0 #ff00c1, 2px 2px 0 #00fff0; }
+      100% { text-shadow: 2px -2px 0 #ff00c1, -2px 2px 0 #00fff0; }
+    }
+    .cyber-glitch:hover {
+      animation: textGlitch 0.2s linear infinite;
+    }
+  </style>
 </head>
-<body>
-    <!-- Page Wrapper Start -->
-    <div class="page-wrapper">
-      <div class="side-whatsapp-buttons">
-          <a href="https://wa.me/+8801713599468">
-            <img height="60" src="/asset/frontend_asset/assets/img/core/whatsapp.svg">
-          </a>
+<body class="h-screen w-screen relative overflow-hidden">
+
+  <!-- Underlying 3D Ambient Space Grid -->
+  <div id="canvas-container"></div>
+
+  <div class="main-layout flex flex-col h-full w-full relative">
+    
+    <!-- Left HUD Trigger Button -->
+    <div class="hud-overlay flex gap-2">
+      <div class="glass px-4 py-2 rounded-lg shadow-2xl flex items-center gap-3 border border-teal-500/30">
+        <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+        <h1 class="text-sm font-black font-mono tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 cyber-glitch cursor-pointer">AETHER STRIKE</h1>
       </div>
-	    <!-- Header Section Start -->
-<header class="header">
-    <!-- Mobile Menu -->
-    <div class="mobile-menu-container">
-        <div class="mobile-menu-close"></div>
-        <div id="mobile-menu-wrap"></div>
+      <button onclick="toggleSidebarEngine()" class="glass px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-widest font-bold border border-white/10 text-white/80 hover:bg-white/5 active:scale-95 transition">
+        ⚙️ Core Settings
+      </button>
     </div>
-    <!-- Mobile Menu End -->
 
-	<!-- Main Menu Start -->
-	<div class="main-nav">
-		<div class="container">
-			<div class="row">
-				<nav class="navbar navbar-expand-lg navbar-light w-100 site-navigation">
-			  		<a class="navbar-brand" href="/">
-						<img src="/asset/frontend_asset/assets/img/core/logo.png" alt="" >
-			  		</a>
-			  		<h3 class="phone-header">ক্যাডেট মিশন <br> কোচিং সেন্টার</h3>
-				  	<button class="mobile-menu-trigger"> 
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-				 	
-				  	<div class="navbar-collapse site-menu-wrap">
-				  		<!-- Close Menu Icon -->
-					 	<div class="close-menu-wrap">
-					 		<span class="fa fa-times close-menu-icon"></span>
-					 	</div>
+    <!-- Slide-Out Tactical Management Matrix Sidebar -->
+    <div id="sidebar" class="control-sidebar glass border-l border-white/10 p-6 flex flex-col gap-6 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <h2 class="text-xs font-mono tracking-widest font-bold text-teal-400 uppercase">> TACTICAL SYSTEM OVERLAY</h2>
+        <button onclick="toggleSidebarEngine()" class="text-white/40 hover:text-white font-mono text-sm font-bold">✕</button>
+      </div>
 
-					    <ul class="navbar-nav site-menu">
-						    <li class="nav-item ">
-						        <a class="menu-link active" href="/"><i class="fa fa-home"></i> Home</a>
-						    </li>
-						    <li class="nav-item ">
-						        <a class="menu-link active" href="/program">Program</a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/admission">Online Admission
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/branch">Branch
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/result">Result
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/notice">Notice
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/gallery">Gallery
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/video">Video
-						        </a>
-						    </li>
-						    <li class="nav-item">
-						        <a class="menu-link" href="/connect-with-us">Contact Us</a>
-						    </li>
-						</ul>
-				  	</div>
-				</nav>
-			</div>
-		</div>
-	</div>
-</header>
-<!-- Header Section End -->        <!-- Hero Slider Area Start -->
-<section class="hero-slider-area">
-	<div class="hero-slider">
-		<div class="hero-slider-inner owl-carousel">
-            			<div class="hero-slider-item" style="background-image: url('/asset/backend_asset/assets/images/slider/imagetBcsr.jpg');">
-			</div>
-            			<div class="hero-slider-item" style="background-image: url('/asset/backend_asset/assets/images/slider/imageGpdFv.jpg');">
-			</div>
-            			<div class="hero-slider-item" style="background-image: url('/asset/backend_asset/assets/images/slider/imageK2D2b.jpg');">
-			</div>
-            			<div class="hero-slider-item" style="background-image: url('/asset/backend_asset/assets/images/slider/imagearWpZ.jpg');">
-			</div>
-            		</div>
-	</div>
-</section>
-<!-- End Hero Slider Area -->
-<section class="recent_notice_area p-4">
-	<div class="container">
-		<div class="row">
-			<div class="col-lg-12">
-				<marquee width="100%" direction="left" height="100px">
-					<p class="breaking mb-0"> Cadet Mission Coaching Center. Be Active, Be Creative.  </p>
-				</marquee>
-			</div>
-		</div>
-	</div>
-</section>
-<!-- About Section -->
-<section class="about-section relative p-4">
-	<div class="container">
-		<div class="row justify-content-center pt-2">
-			<div class="col-md-6 col-lg-6 col-xl-6">
-			     
-				<div class="row">
-					<div class="col-md-7 pb-2">
-						<img class="ceo-image" src="/asset/backend_asset/assets/images/artista/imagePtfci.jpg" width="100%">	
-					</div>
-				</div>
-				<p><p class="MsoNormal"><span style="font-size: 12pt; line-height: 107%; font-family: &quot;Nirmala UI&quot;, sans-serif;"><b>আশেক মাহমোদ&nbsp;<o:p></o:p></b></span></p>
-
-<p class="MsoNormal"><span style="font-size: 12pt; line-height: 107%; font-family: &quot;Nirmala UI&quot;, sans-serif;"><b>পরিচালক, ক্যাডেট মিশন কোচিং সেন্টার</b></span></p><p class="MsoNormal" style="margin-bottom: 15pt; text-align: justify; line-height: normal; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;"><span style="font-size: 13pt; font-family: &quot;Nirmala UI&quot;, sans-serif;">সুপ্রিয় সুধী,</span></p><p class="MsoNormal" style="margin-bottom: 15pt; text-align: justify; line-height: normal; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;"><span style="font-family: &quot;Nirmala UI&quot;, sans-serif; font-size: 13pt;">আসসালামু আলাইকুম। আপনাকে স্বাগতম, আপনার আগ্রহ এবং আমাদের
-প্রতি আন্তরিকতার জন্য এই শিক্ষা সংক্রান্ত পাতায়। “ক্যাডেট মিশন”&nbsp; বিশ্বাস
-করে প্রতিটি শিশু অনন্য মেধার অধিকারী। তাদের সুপ্ত মেধা বিকাশের গুরু দায়িত্ব
-যখন আপনারা আমাদের হাতে তুলে দেন তখন তা পালন করা আমাদের দায়িত্ব এবং কর্তব্যে
-পরিণত হয়।</span></p><p class="MsoNormal" style="margin-bottom: 15pt; text-align: justify; line-height: normal; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;"><span style="font-size: 13pt; font-family: &quot;Nirmala UI&quot;, sans-serif;">আপনাদের আস্থা আর&nbsp;বিশ্বাসের&nbsp;শতভাগ প্রতিফলন এবং
-আপনার সন্তানকে সেরা মেধাবী হিসাবে তৈরীতে “ক্যাডেট মিশন” শিক্ষা পরিবারের একঝাঁক
-অভিজ্ঞতাসম্পন্ন ও তরুণ মেধাবী শিক্ষক সদা সচেষ্ট।</span><span style="font-size: 13pt; font-family: &quot;Nunito Sans&quot;;"><o:p></o:p></span></p><p class="MsoNormal" style="margin-bottom: 15pt; text-align: justify; line-height: normal; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;"><span style="font-size: 13pt; font-family: &quot;Nirmala UI&quot;, sans-serif;">আপনাদের যে কোন পরামর্শ বা দিক—নির্দেশনা আমাদের কাছে আগামী
-পথচলার আলোক—বর্তিকা স্বরূপ। আপনার সময় উপযোগী সিদ্ধান্তই আপনার সন্তানের ভবিষ্যৎ
-নির্ধারণ করে, তার সাথে সঠিক পথ প্রদর্শক যুক্ত হলে আগামীর মেধাবী প্রজন্ম আশা করি
-খুব বেশি দূরে নয়।</span></p><p class="MsoNormal" style="margin-bottom: 15pt; text-align: justify; line-height: normal; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;"><span style="font-size: 13pt; font-family: &quot;Nirmala UI&quot;, sans-serif;">সর্বোপরি, ধন্যবাদ আপনাকে। সুস্থ থাকুন, পাশে থাকুন।</span></p><p class="MsoNormal"><o:p></o:p></p></p>
-			</div>
-			<div class="col-xl-6 col-md-6 col-lg-6">
-			    <div class="pb-2">
-                    <b>Our Companion : 40259</b>
-                </div>
-				<div class="single_notice_box">
-					<div class="card text-white card_news mb-3">
-					  	<div class="card-header"><i class="fa fa-file-text notice-board-icon"></i>  Recent Notice</div>
-						<div class="card-body p-0">
-							<ul class="recent_news_inner d-block">
-																<a href="/notice/aro-kichu-srwsesh-sadharn-jngan-2026">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2025
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	আরো কিছু সর্বশেষ সাধারণ জ্ঞান-2026
-									</p>
-								</li>
-								</a>
-																<a href="/notice/aidizal-krtrrik-prkasit-srwsesh-sadharn-jngan-2026">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2025
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	আইডিয়াল কর্তৃক প্রকাশিত সর্বশেষ সাধারণ জ্ঞান	-2026
-									</p>
-								</li>
-								</a>
-																<a href="/notice/aidizal-krtrrik-prkasit-srwsesh-sadharn-jngan">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	3 January 2025
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	আইডিয়াল কর্তৃক প্রকাশিত সর্বশেষ সাধারণ জ্ঞান
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-14-er-flafl-balk-2024">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -14 এর ফলাফল (বালক)-2024
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-14-er-flafl-balika-2024">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -14 এর ফলাফল (বালিকা)-2024
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-13-er-flafl-balika-2024">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -13 এর ফলাফল (বালিকা)-2024
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-13-er-flafl-balk-2024">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	26 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -13 এর ফলাফল (বালক)-2024
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-12-er-flafl-balk-2024">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	16 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -12 এর ফলাফল (বালক)-2024
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-12-er-flafl-balika-202">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	16 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -12 এর ফলাফল (বালিকা)-202
-									</p>
-								</li>
-								</a>
-																<a href="/notice/kzadet-vittik-mdel-preeksha-11-er-flafl-balika-202">
-                                <li>
-                                	<p>
-												                            	<i class="fa fa-calendar"></i>
-		                            	16 December 2024
-									</p>
-									<p>
-										<i class="fa fa-check"></i>
-                                    	ক্যাডেট ভিত্তিক মডেল পরীক্ষা -11 এর ফলাফল (বালিকা)-202
-									</p>
-								</li>
-								</a>
-															</ul>
-							<div class="text-center m-2">
-							    <a href="/notice">View More</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+      <!-- Match Runtime Module -->
+      <div class="flex flex-col gap-2 bg-black/30 border border-white/5 p-4 rounded-xl font-mono">
+        <span class="text-[10px] text-white/40 uppercase font-bold tracking-wider">Session Match Clock</span>
+        <div id="session-timer" class="text-2xl font-black text-teal-300 tracking-widest">00:00:00</div>
+        <div class="flex gap-2 mt-1">
+          <button onclick="controlTimer(true)" class="flex-1 bg-teal-950/40 border border-teal-500/30 text-[9px] uppercase tracking-wider font-bold py-1 rounded text-teal-300 transition">Start</button>
+          <button onclick="controlTimer(false)" class="flex-1 bg-red-950/40 border border-red-500/30 text-[9px] uppercase tracking-wider font-bold py-1 rounded text-red-300 transition">Reset</button>
         </div>
-	</div>
-</section>
-<!-- End About Section -->
+      </div>
 
-<!-- Service Section -->
-<section class="service-section relative p-4">
-	<div class="container">
-		<div class="row justify-content-center pt-2">
-			<div class="col-md-12 pb-2">
-    			<div class="about-title text-center">
-					<h2 class="pb-4">Our Programs</h2>
-				</div>
-			</div>
+      <!-- Core Crosshair Synthesizer Matrix Generator -->
+      <div class="flex flex-col gap-3 bg-black/30 border border-white/5 p-4 rounded-xl font-mono">
+        <span class="text-[10px] text-white/40 uppercase font-bold tracking-wider">HUD Crosshair Alignment</span>
+        <div class="flex flex-col gap-2 text-xs">
+          <div class="flex justify-between items-center">
+            <label class="text-[10px] text-white/50">Outer Diameter:</label>
+            <input type="range" id="ch-size" min="4" max="24" value="10" class="w-24 accent-teal-500" oninput="updateCrosshairGenerator()">
+          </div>
+          <div class="flex justify-between items-center">
+            <label class="text-[10px] text-white/50">Core Color:</label>
+            <input type="color" id="ch-color" value="#00ffcc" class="bg-transparent w-6 h-6 rounded cursor-pointer" oninput="updateCrosshairGenerator()">
+          </div>
         </div>
-        <div class="row">
-                    	<div class="col-md-3 col-12 pb-4">
-        		<a href="/program/pncm-srenee">
-                    <div class="main-services-box">
-                        <div class="service-image text-center pt-3">
-                            <img src="/asset/backend_asset/assets/images/program/imagenrQeV.webp">
-                        </div>
-                        <div class="course-content text-center">
-                            <a href="/program/pncm-srenee" title=""><h3>পঞ্চম শ্রেণী</h3></a>
-                            <p>
-                            	<p>বৃওি ব্যাচ + অ্যাডভান্স ক্যাডেট ব্যাচ</p><p><span style="font-family: &quot;Nirmala UI&quot;, sans-serif; font-size: 16px;">বাংলা + English Version</span><br></p>
-                            </p>
-                        </div>
-                    </div>      
-                </a>
-        	</div>
-                    	<div class="col-md-3 col-12 pb-4">
-        		<a href="/program/shshth-srenee">
-                    <div class="main-services-box">
-                        <div class="service-image text-center pt-3">
-                            <img src="/asset/backend_asset/assets/images/program/imagejEnK7.webp">
-                        </div>
-                        <div class="course-content text-center">
-                            <a href="/program/shshth-srenee" title=""><h3>ষষ্ঠ শ্রেণী</h3></a>
-                            <p>
-                            	<p class="MsoNormal"><font face="Nirmala UI, sans-serif"><span style="font-size: 16px;">ক্যাডেট ব্যাচ / ক্লাস কোচিং&nbsp;</span></font></p><p class="MsoNormal"><font face="Nirmala UI, sans-serif"><span style="font-size: 16px;">বাংলা + English Version</span><br></font><br></p>
-                            </p>
-                        </div>
-                    </div>      
-                </a>
-        	</div>
-                    	<div class="col-md-3 col-12 pb-4">
-        		<a href="/program/sptm-srenee">
-                    <div class="main-services-box">
-                        <div class="service-image text-center pt-3">
-                            <img src="/asset/backend_asset/assets/images/program/imageCG9Er.webp">
-                        </div>
-                        <div class="course-content text-center">
-                            <a href="/program/sptm-srenee" title=""><h3>সপ্তম শ্রেণী</h3></a>
-                            <p>
-                            	<p class="MsoNormal"><font face="Nirmala UI, sans-serif"><span style="font-size: 16px;">ক্লাস কোচিং</span></font><br></p>
-                            </p>
-                        </div>
-                    </div>      
-                </a>
-        	</div>
-                    	<div class="col-md-3 col-12 pb-4">
-        		<a href="/program/oshtm-srenee">
-                    <div class="main-services-box">
-                        <div class="service-image text-center pt-3">
-                            <img src="/asset/backend_asset/assets/images/program/imageF7Xkg.webp">
-                        </div>
-                        <div class="course-content text-center">
-                            <a href="/program/oshtm-srenee" title=""><h3>অষ্টম শ্রেণী</h3></a>
-                            <p>
-                            	<p class="MsoNormal"><font face="Nirmala UI, sans-serif"><span style="font-size: 16px;">ক্লাস কোচিং</span></font><br></p>
-                            </p>
-                        </div>
-                    </div>      
-                </a>
-        	</div>
-                    </div>
-	</div>
-</section>
-<!-- End Services Section -->
-
-<!-- Branch Section -->
-<section class="branch-section relative p-4">
-	<div class="container">
-		<div class="row justify-content-center pt-2">
-			<div class="col-md-12 pb-2">
-    			<div class="about-title text-center">
-					<h2 class="pb-4">Our Branch</h2>
-				</div>
-			</div>
+        <div class="w-full h-16 bg-black/50 border border-white/5 rounded relative flex items-center justify-center">
+          <div id="crosshair-preview" class="absolute rounded-full pointer-events-none" style="width: 10px; height: 10px; background: #00ffcc; box-shadow: 0 0 8px currentColor;"></div>
+          <span class="text-[9px] text-white/20 uppercase tracking-widest select-none">Vector Sync</span>
         </div>
-        <div class="row">
-                    	<div class="col-md-4">
-                <a href="/branch/mein-branc">
-                    <div class="branch">
-                        <img src="/asset/backend_asset/assets/images/branch/imageYkuAT.png" alt="">
-                        <div class="branchtext text-center">
-                            <div class="campusname">
-                                <p>মেইন ব্রাঞ্চ</p>
-                            </div>
-                            <div class="addressdetailsmubc">
-                                <div class="addresscampus pb-1">
-                                    <h6>১ নং বাউন্ডারি রোড, ময়মনসিংহ</h6>
-                                    <h6>Phone : 01713-599468 , 01973599511</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-                    	<div class="col-md-4">
-                <a href="/branch/eeswrgnj-sakha">
-                    <div class="branch">
-                        <img src="/asset/backend_asset/assets/images/branch/image7gjPn.jpg" alt="">
-                        <div class="branchtext text-center">
-                            <div class="campusname">
-                                <p>ঈশ্বরগঞ্জ শাখা</p>
-                            </div>
-                            <div class="addressdetailsmubc">
-                                <div class="addresscampus pb-1">
-                                    <h6>কালীবাড়ি রোড</h6>
-                                    <h6>Phone : 01721-299921</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-                    	<div class="col-md-4">
-                <a href="/branch/neekona-sakha">
-                    <div class="branch">
-                        <img src="/asset/backend_asset/assets/images/branch/image3SFCU.jpg" alt="">
-                        <div class="branchtext text-center">
-                            <div class="campusname">
-                                <p>নেএকোনা শাখা</p>
-                            </div>
-                            <div class="addressdetailsmubc">
-                                <div class="addresscampus pb-1">
-                                    <h6>মোক্তারপাড়া,নেএকোনা</h6>
-                                    <h6>Phone : 01973599512, 01619067555</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-                    	<div class="col-md-4">
-                <a href="/branch/goureepur-sakha">
-                    <div class="branch">
-                        <img src="/asset/backend_asset/assets/images/branch/imageDu0qr.png" alt="">
-                        <div class="branchtext text-center">
-                            <div class="campusname">
-                                <p>গৌরীপুর  শাখা</p>
-                            </div>
-                            <div class="addressdetailsmubc">
-                                <div class="addresscampus pb-1">
-                                    <h6>নূর-মহল,(দ্বিতীয় তলা) কলাবাগান, গৌরীপুর</h6>
-                                    <h6>Phone : 01711-120876</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-                    	<div class="col-md-4">
-                <a href="/branch/satksheera-sakha">
-                    <div class="branch">
-                        <img src="/asset/backend_asset/assets/images/branch/imagezdolH.png" alt="">
-                        <div class="branchtext text-center">
-                            <div class="campusname">
-                                <p>সাতক্ষীরা শাখা</p>
-                            </div>
-                            <div class="addressdetailsmubc">
-                                <div class="addresscampus pb-1">
-                                    <h6>রাজার বাগান সরকারি কলেজ রোড,  সাতক্ষীরা</h6>
-                                    <h6>Phone : 01712-266274</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-                    </div>
-	</div>
-</section>
-<!-- End Branchs Section -->
+      </div>
 
-<section class="video-section relative p-4">
-	<div class="container">
-		<div class="row justify-content-center pt-2">
-			<div class="col-md-12 pb-2">
-    			<div class="about-title text-center">
-					<h2 class="pb-2">Youtube Video</h2>
-				</div>
-			</div>
-						<div class="col-md-6 pb-4">
-				<iframe width="100%" height="400" src="https://www.youtube.com/embed/6BcntkNSjNc" title="Cadet Mission Coaching Center." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-			</div>
-						<div class="col-md-6 pb-4">
-				<iframe width="100%" height="400" src="https://www.youtube.com/embed/yxKqtOztL-o" title="Cadet Mission Coaching Center." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-			</div>
-			        </div>
+      <!-- System Optimization Flags Feed -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <span class="text-[10px] font-mono text-purple-400 uppercase font-bold tracking-wider mb-2">> LOCAL INSTANCE LOGS</span>
+        <div class="flex-1 bg-black/40 border border-white/5 rounded-xl p-3 font-mono text-[10px] overflow-y-auto space-y-1.5 leading-normal text-white/60 select-text">
+          <div>[SYSTEM] Core Client localized successfully.</div>
+          <div>[HARDWARE] iPad input vector anchors deployed.</div>
+          <div>[GRAPHICS] WebGL frame context stabilized.</div>
+          <div id="dynamic-log-line"></div>
+        </div>
+      </div>
+
+      <div class="text-[9px] font-mono text-center text-white/20 tracking-wider border-t border-white/5 pt-3">
+        AETHER CLIENT MATRIX // CASE CLOSED
+      </div>
     </div>
-</section> 
 
-<!-- <div class="col-12 mt-2">
-	<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3652.302865049332!2d90.42797861445557!3d23.73657689522243!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8405d1f169b%3A0x230c62f329cb4f05!2zQURIQVlBTiAo4KaF4Kan4KeN4Kav4Kef4KaoKQ!5e0!3m2!1sen!2sus!4v1671273374241!5m2!1sen!2sus" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div> -->
-<input type="hidden" value="40259" id="visitor_count">
+    <!-- Primary Isolated WebGL Game Stream Node Container -->
+    <div class="game-container">
+      <iframe 
+        src="https://deadshot.io/" 
+        id="game-frame"
+        allow="autoplay; fullscreen; gamepad; keyboard"
+        loading="lazy">
+      </iframe>
     </div>
-    <!-- Page Wrapper End -->
-    <!-- Footer Section Start -->
-<footer class="main-footer">
-	<!-- Footer Top -->
-	<div class="footer-top-area">
-		<div class="container">
-    		<div class="widget-section">
-    			<div class="row clearfix">
 
-                    <div class="col-lg-3 col-md-12 col-12 mb-30">
-                       <div class="footer-widget">
-                            <h4 class="title">Address</h4>
-                            <div class="contact-info-widget">
-                                <ul>
-                                	<li>
-                                		<p>
-		                                	১ নং বাউন্ডারি রোড, ময়মনসিংহ
-		                                </p>
-                                	</li>
-                                    
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12 mb-30">
-                       <div class="footer-widget">
-                            <h4 class="title">Branch</h4>
-                            <div class="link-widget">
-                                <ul>
-                                                                        <li><a href="/branch/mein-branc">মেইন ব্রাঞ্চ</a></li>
-                                                                        <li><a href="/branch/eeswrgnj-sakha">ঈশ্বরগঞ্জ শাখা</a></li>
-                                                                        <li><a href="/branch/neekona-sakha">নেএকোনা শাখা</a></li>
-                                                                        <li><a href="/branch/goureepur-sakha">গৌরীপুর  শাখা</a></li>
-                                                                        <li><a href="/branch/satksheera-sakha">সাতক্ষীরা শাখা</a></li>
-                                                                    </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12 mb-30">
-                       <div class="footer-widget">
-                            <h4 class="title">Quick Links</h4>
-                            <div class="link-widget">
-                                <ul>
-                                    <li><a href="/about">About Us</a></li>
-                                    <li><a href="/mission-vission">Mission &amp; Vission</a></li>
-                                    <li><a href="/privacy-policy">Terms &amp; Condition</a></li>
-                                    <li><a href="/terms-condition">Privacy Policy</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-12 col-12 mb-30">
-                       <div class="footer-widget">
-                            <h4 class="title">Keep up with us</h4>
-                            <div class="contact-info-widget">
-                                <ul>
-                                                                        <li>
-                                    	<span class="icon flaticon-telephone"></span>
-	                                    <a href="tel:01713-599468">
-	                                    	01713-599468
-	                                    </a>
-	                                </li>
-                                    	                                                                    <li>
-                                        <span class="icon flaticon-telephone"></span>
-                                        <a href="tel:01973-599511">
-                                            01973-599511
-                                        </a>
-                                    </li>
-                                                                                                            <li>
-                                    	<span class="icon flaticon-email-2"></span>
-	                                    <a href="/cdn-cgi/l/email-protection#b591dcdbd3dac7d8d4c1dcdadb988bd0d8d4dcd9">
-	                                    	<span class="__cf_email__" data-cfemail="92f1f3f6f7e6fffbe1e1fbfdfca0a6a5d2f5fff3fbfebcf1fdff">[email&#160;protected]</span>
-	                                    </a>
-                                    </li>
-                                                                    </ul>
-                            </div>
-                            <div class="social-link-widget">
-                                                                <a href="https://www.facebook.com/profile.php?id=100057168742289" target="_blank"><i class="fa fa-facebook"></i></a>
-                                                                                                <a href="https://www.twitter.com/" target="_blank"><i class="fa fa-twitter"></i></a>
-                                                                                                <a href="https://www.instagram.com/" target="_blank"><i class="fa fa-instagram"></i></a>
-                                                                                                <a href="https://www.linkedin.com/" target="_blank"><i class="fa fa-linkedin"></i></a>
-                                                                                                <a href="https://wa.me/+8801713599468" target="_blank"><i class="fa fa-whatsapp"></i></a>
-                                                            </div>
-                            
-                        </div>
-                    </div>
-    			</div>
-    		</div>
-    	</div>
-	</div>
-	<!-- Footer Bottom -->
-	<div class="footer-bottom-area">
-        <div class="container">
-            <div class="row ">
-                <!-- Copyright -->
-                <div class="copyright col-12 centered">
-                    <p class="mb-0 text-white copy-div">© CMCC. All rights reserved 2023. <p class="company text-white">Designed & Developed By <a href="https://bizitbd.com/" target="_blank"><span style="color: #d50000;">  Biz IT BD</p></span></a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
-<!-- Footer Section  End -->    <!-- Script Start -->
-	<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="/asset/frontend_asset/assets/js/jquery.js"></script>
-	<script src="/asset/frontend_asset/assets/js/jquery.waypoints.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/jquery.counterup.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/popper.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/bootstrap.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/owl.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/SlickNav/1.0.10/jquery.slicknav.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/jquery.nice-select.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-	<script src="/asset/frontend_asset/assets/js/jquery-ui.js"></script>
-	<script src="/asset/frontend_asset/assets/js/main.js" defer=""></script>
-  <script src="https://cadetmission.com/asset/toastr.min.js"></script>
-  <script src="https://cdn.bootcss.com/toastr.js/latest/js/toastr.min.js"></script>
+  </div>
+
+  <!-- Sound Mechanics Engine Script -->
   <script>
-    
-    
-    
-      </script>
-  <script>
-    $(document).ready(function(){
-    	var previous = $("#visitor_count").val();
-		$.ajax({
-			url:"https://cadetmission.com/visitor-count",
-			type: "PATCH",
-			cache: false,
-			data:{
-                _token:'IWbKxaAQNtmfTJwTAJTnsKFzjgEI1RmQFELy5fPh',
-				visitor: 1 + parseInt(previous),
-			},
-			success: function(dataResult){
-                dataResult = JSON.parse(dataResult);
-	            if(dataResult.statusCode)
-	            {
-	                console.log('success')
-	            }
-			}
-		});
-	});
+    function playHapticTone(frequency, shapeType, timeLength) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = shapeType;
+        oscillator.frequency.value = frequency;
+        gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + timeLength);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + timeLength);
+      } catch (err) {}
+    }
 
-    </script>
+    // Interactive Sidebar Viewport Animation Engine
+    function toggleSidebarEngine() {
+      playHapticTone(700, 'sine', 0.05);
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.toggle('open');
+    }
+
+    // Custom Interactive HUD Crosshair Array
+    function updateCrosshairGenerator() {
+      const sizing = document.getElementById('ch-size').value;
+      const colorSelection = document.getElementById('ch-color').value;
+      const previewNode = document.getElementById('crosshair-preview');
+      if(previewNode) {
+        previewNode.style.width = sizing + 'px';
+        previewNode.style.height = sizing + 'px';
+        previewNode.style.backgroundColor = colorSelection;
+        previewNode.style.color = colorSelection;
+      }
+    }
+
+    // Precise Game Match Session Timer Tracking Array
+    let stopwatchRef = null;
+    let totalElapsedSeconds = 0;
+
+    function controlTimer(actionToggle) {
+      playHapticTone(600, 'sine', 0.03);
+      const textDisplay = document.getElementById('session-timer');
+      
+      if (actionToggle) {
+        if(stopwatchRef) return;
+        stopwatchRef = setInterval(() => {
+          totalElapsedSeconds++;
+          let hours = Math.floor(totalElapsedSeconds / 3600).toString().padStart(2, '0');
+          let minutes = Math.floor((totalElapsedSeconds % 3600) / 60).toString().padStart(2, '0');
+          let seconds = (totalElapsedSeconds % 60).toString().padStart(2, '0');
+          if(textDisplay) textDisplay.innerText = `${hours}:${minutes}:${seconds}`;
+        }, 1000);
+      } else {
+        clearInterval(stopwatchRef);
+        stopwatchRef = null;
+        totalElapsedSeconds = 0;
+        if(textDisplay) textDisplay.innerText = "00:00:00";
+      }
+    }
+
+    // Periodic Device Status Mapping
+    setInterval(() => {
+      const line = document.getElementById('dynamic-log-line');
+      if(line) {
+        line.innerText = `[STREAM] Ping matrix stable at ${Math.floor(Math.random() * 12 + 18)}ms vector loop.`;
+      }
+    }, 4000);
+  </script>
+
+  <!-- Ambient Cinematic Geometric Motion Grid Background -->
+  <script>
+    const scene = new THREE.Scene(); 
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); 
+    renderer.setSize(window.innerWidth, window.innerHeight); 
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+    
+    const geometry = new THREE.TorusGeometry(14, 0.1, 16, 100); 
+    const material = new THREE.MeshBasicMaterial({ color: 0x14b8a6, wireframe: true, transparent: true, opacity: 0.12 });
+    const torus = new THREE.Mesh(geometry, material); 
+    scene.add(torus); 
+    camera.position.z = 25;
+
+    function animate() { 
+      requestAnimationFrame(animate); 
+      torus.rotation.x += 0.0004; 
+      torus.rotation.y += 0.0008; 
+      renderer.render(scene, camera); 
+    } 
+    animate();
+
+    window.addEventListener('resize', () => { 
+      camera.aspect = window.innerWidth / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+      renderer.setSize(window.innerWidth, window.innerHeight); 
+    });
+  </script>
 </body>
 </html>
